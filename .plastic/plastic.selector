@@ -1,0 +1,4 @@
+repository "RTSGame 2025-08-14_13-16-15/RTSGame@11270495441177@cloud"
+  path "/"
+    br "/main"
+    co "/main"
