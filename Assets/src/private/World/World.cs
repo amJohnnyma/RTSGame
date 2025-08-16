@@ -59,7 +59,7 @@ public class World : MonoBehaviour
 
                 meshFilter = sphere.AddComponent<MeshFilter>();
                 meshRenderer = sphere.AddComponent<MeshRenderer>();
-                meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
+                meshRenderer.sharedMaterial = new Material(Shader.Find("WorldMat"));
 
                 terrain = sphere.AddComponent<IcosphereTerrain>();
             }
