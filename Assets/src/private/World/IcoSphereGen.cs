@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class IcosphereGenerator
+public class IcosphereGenerator
 {
-    public static Mesh Create(float radius, int subdivisions)
+    public Mesh Create(float radius, int subdivisions)
     {
+
         // === Base icosahedron ===
-        float t = (1f + Mathf.Sqrt(5f)) / 2f;
+            float t = (1f + Mathf.Sqrt(5f)) / 2f;
 
         List<Vector3> verts = new List<Vector3>
         {
@@ -83,7 +84,7 @@ public static class IcosphereGenerator
         return mesh;
     }
 
-    private static int GetMidpoint(int i1, int i2, List<Vector3> verts, Dictionary<long, int> cache, float radius)
+    private int GetMidpoint(int i1, int i2, List<Vector3> verts, Dictionary<long, int> cache, float radius)
     {
         long key = ((long)Mathf.Min(i1, i2) << 32) + Mathf.Max(i1, i2);
         if (cache.TryGetValue(key, out int ret))
