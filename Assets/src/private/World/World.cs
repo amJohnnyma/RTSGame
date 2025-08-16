@@ -69,7 +69,7 @@ public class World : MonoBehaviour
         if (meshFilter != null)
             meshFilter.sharedMesh = icoSphereGen.Create(radius, subdivisions);
             terrain.Init(seed, layers, flatness, height);
-            terrain.Gen();
+            terrain.Gen(meshFilter.sharedMesh);
 
 
         numVertices = (int)(10f * Mathf.Pow(4, subdivisions) + 2f);

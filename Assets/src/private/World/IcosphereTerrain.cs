@@ -26,9 +26,8 @@ public class IcosphereTerrain : MonoBehaviour
         perlinColor.Init();
     }
 
-    public void Gen()
+    public void Gen(Mesh mesh)
     {
-        Mesh mesh = GetComponent<MeshFilter>().sharedMesh;
         Vector3[] vertices = mesh.vertices;
         Color[] colors = new Color[mesh.vertices.Length];
 
@@ -39,13 +38,14 @@ public class IcosphereTerrain : MonoBehaviour
             Vector3 v = vertices[i].normalized; // stay on sphere
             float e = noise.Val(v.x * 2f, v.y * 2f, layers, flatness);
             vertices[i] = v * (1f + e * heightScale);
-            colors[i] = perlinColor.GetColor(1f + e * heightScale);
+            colors[i] = perlinColor.GetColor(e * heightScale * flatness * layers);
 
         }
-    
+
         mesh.vertices = vertices;
         mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
         mesh.colors = colors;
+        mesh.RecalculateBounds();
+
     }
 }

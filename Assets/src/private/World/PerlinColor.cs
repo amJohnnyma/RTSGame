@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public class PerlinColorPair
 {
-    [Range(0f, 1f)] public float perlinValue;
+    [Range(0f, 5f)] public float perlinValue;
     public Color color;
 }
 
