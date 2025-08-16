@@ -45,9 +45,9 @@ public class IcosphereGenerator
             List<int> newFaces = new List<int>();
             for (int i = 0; i < faces.Count; i += 3)
             {
-                int a = faces[i];
+                int a = faces[i+2];
                 int b = faces[i + 1];
-                int c = faces[i + 2];
+                int c = faces[i + 0];
 
                 int ab = GetMidpoint(a, b, verts, midpointCache, radius);
                 int bc = GetMidpoint(b, c, verts, midpointCache, radius);
