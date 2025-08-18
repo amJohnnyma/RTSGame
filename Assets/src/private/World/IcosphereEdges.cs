@@ -20,6 +20,7 @@ public class IcosphereEdges : MonoBehaviour
             Vector3 a = meshFilter.transform.TransformPoint(verts[tris[i]]);
             Vector3 b = meshFilter.transform.TransformPoint(verts[tris[i + 1]]);
             Vector3 c = meshFilter.transform.TransformPoint(verts[tris[i + 2]]);
+            
 
             Gizmos.DrawLine(a, b);
             Gizmos.DrawLine(b, c);

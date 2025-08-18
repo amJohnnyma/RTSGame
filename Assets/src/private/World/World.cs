@@ -21,6 +21,7 @@ public class World : MonoBehaviour
     private GameObject sphere;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
+    private MeshCollider meshCollider;
 
     private IcosphereGenerator icoSphereGen = new IcosphereGenerator();
     private IcosphereTerrain terrain;
@@ -50,6 +51,7 @@ public class World : MonoBehaviour
                 sphere = existing.gameObject;
                 meshFilter = sphere.GetComponent<MeshFilter>();
                 meshRenderer = sphere.GetComponent<MeshRenderer>();
+                meshCollider = sphere.GetComponent<MeshCollider>();
                 terrain = sphere.GetComponent<IcosphereTerrain>();
             }
             else
@@ -60,16 +62,22 @@ public class World : MonoBehaviour
                 meshFilter = sphere.AddComponent<MeshFilter>();
                 meshRenderer = sphere.AddComponent<MeshRenderer>();
                 meshRenderer.sharedMaterial = new Material(Shader.Find("WorldMat"));
-
+                meshCollider = sphere.AddComponent<MeshCollider>();
                 terrain = sphere.AddComponent<IcosphereTerrain>();
             }
         }
 
         // Generate mesh and assign
         if (meshFilter != null)
+        {
             meshFilter.sharedMesh = icoSphereGen.Create(radius, subdivisions);
             terrain.Init(seed, layers, flatness, height);
             terrain.Gen(meshFilter.sharedMesh);
+
+            meshCollider.sharedMesh = null;
+            meshCollider.sharedMesh = meshFilter.sharedMesh;
+
+        }
 
 
         numVertices = (int)(10f * Mathf.Pow(4, subdivisions) + 2f);

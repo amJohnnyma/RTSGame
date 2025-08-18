@@ -28,24 +28,58 @@ public class IcosphereTerrain : MonoBehaviour
 
     public void Gen(Mesh mesh)
     {
-        Vector3[] vertices = mesh.vertices;
-        Color[] colors = new Color[mesh.vertices.Length];
+        int[] triangles = mesh.triangles;
+        Vector3[] oldVerts = mesh.vertices;
+
+        Vector3[] newVerts = new Vector3[triangles.Length];
+        Color[] newColors = new Color[triangles.Length];
+        int[] newTris = new int[triangles.Length];
 
         PerlinNoise noise = new PerlinNoise(seed);
 
-        for (int i = 0; i < vertices.Length; i++)
+        for (int i = 0; i < triangles.Length; i += 3)
         {
-            Vector3 v = vertices[i].normalized; // stay on sphere
-            float e = noise.Val(v.x * 2f, v.y * 2f, layers, flatness);
-            vertices[i] = v * (1f + e * heightScale);
-            colors[i] = perlinColor.GetColor(e * heightScale * flatness * layers);
+            // Get triangle vertices
+            Vector3 v0 = oldVerts[triangles[i]].normalized;
+            Vector3 v1 = oldVerts[triangles[i+1]].normalized;
+            Vector3 v2 = oldVerts[triangles[i+2]].normalized;
 
+            // Offset vertices by noise-based height
+            float e0 = noise.Val(v0.x * 2f, v0.y * 2f, layers, flatness);
+            float e1 = noise.Val(v1.x * 2f, v1.y * 2f, layers, flatness);
+            float e2 = noise.Val(v2.x * 2f, v2.y * 2f, layers, flatness);
+
+            v0 *= (1f + e0 * heightScale);
+            v1 *= (1f + e1 * heightScale);
+            v2 *= (1f + e2 * heightScale);
+
+            // Use triangle center for color
+            Vector3 center = (v0 + v1 + v2) / 3f;
+            float ec = noise.Val(center.x * 2f, center.y * 2f, layers, flatness);
+            Color triColor = perlinColor.GetColor(ec * heightScale * flatness * layers);
+
+            // Assign duplicated vertices
+            newVerts[i]   = v0;
+            newVerts[i+1] = v1;
+            newVerts[i+2] = v2;
+
+            // Same color for all three
+            newColors[i]   = triColor;
+            newColors[i+1] = triColor;
+            newColors[i+2] = triColor;
+
+            // New triangle indices
+            newTris[i]   = i;
+            newTris[i+1] = i+1;
+            newTris[i+2] = i+2;
         }
 
-        mesh.vertices = vertices;
+        // Apply back
+        mesh.vertices = newVerts;
+        mesh.triangles = newTris;
+        mesh.colors = newColors;
         mesh.RecalculateNormals();
-        mesh.colors = colors;
         mesh.RecalculateBounds();
-
     }
+
 }
