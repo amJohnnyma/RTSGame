@@ -8,7 +8,7 @@ public class World : MonoBehaviour
 {
     [Header("Base world")]
     [SerializeField] public float radius = 1f;
-    [SerializeField][Range(0,6)] public int subdivisions = 2;
+    [SerializeField][Range(0, 6)] public int subdivisions = 2;
     [SerializeField] public int numVertices;
 
     [Header("Perlin terrain")]
@@ -19,6 +19,7 @@ public class World : MonoBehaviour
 
 
     private GameObject sphere;
+    private EntitySpawner spawner;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
     private MeshCollider meshCollider;
@@ -30,7 +31,7 @@ public class World : MonoBehaviour
     private void OnValidate()
     {
         CreateIcosphere();
-            
+
     }
 
     private void Start()
@@ -53,6 +54,7 @@ public class World : MonoBehaviour
                 meshRenderer = sphere.GetComponent<MeshRenderer>();
                 meshCollider = sphere.GetComponent<MeshCollider>();
                 terrain = sphere.GetComponent<IcosphereTerrain>();
+                spawner = sphere.GetComponent<EntitySpawner>();
             }
             else
             {
@@ -64,6 +66,7 @@ public class World : MonoBehaviour
                 meshRenderer.sharedMaterial = new Material(Shader.Find("WorldMat"));
                 meshCollider = sphere.AddComponent<MeshCollider>();
                 terrain = sphere.AddComponent<IcosphereTerrain>();
+                spawner = sphere.AddComponent<EntitySpawner>();
             }
         }
 
@@ -77,10 +80,17 @@ public class World : MonoBehaviour
             meshCollider.sharedMesh = null;
             meshCollider.sharedMesh = meshFilter.sharedMesh;
 
+            spawner.SpawnOnTerrain(meshFilter.sharedMesh);
+
         }
 
 
         numVertices = (int)(10f * Mathf.Pow(4, subdivisions) + 2f);
-    
+
+    }
+
+    public List<float> getWorldVars()
+    {
+        return new List<float> {layers, flatness, height};
     }
 }
