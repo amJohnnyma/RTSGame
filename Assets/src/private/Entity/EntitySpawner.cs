@@ -18,7 +18,7 @@ public class EntitySpawner : MonoBehaviour
             DestroyImmediate(spawnContainer); // or Destroy() if called at runtime
         }
 
-        // Create a new container
+        // Create a new container        
         spawnContainer = new GameObject("SpawnContainer");
         spawnContainer.transform.parent = transform;
 
