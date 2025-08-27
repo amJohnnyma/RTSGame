@@ -43,6 +43,7 @@ public class EntitySpawner : MonoBehaviour
                     slope >= preset.slopeThreshold &&
                     Random.value < preset.density)
                 {
+
                     Vector3 pos = vertices[i];
                     Quaternion rot = Quaternion.FromToRotation(Vector3.up, normals[i]);
 
@@ -53,4 +54,6 @@ public class EntitySpawner : MonoBehaviour
             Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
         }
     }
+
+    
 }
