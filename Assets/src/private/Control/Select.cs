@@ -1,10 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Select : MonoBehaviour
 {
 
+    public List<GameObject> presets;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,6 +28,11 @@ public class Select : MonoBehaviour
             Debug.Log("Key down");
             RayHitMesh();
         }
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Alpha one down");
+            SpawnEntity(presets[0]);
+        }
     }
 
     private bool MouseDown(int type)
@@ -43,11 +51,11 @@ public class Select : MonoBehaviour
         Ray ray = CameraToPointRay();
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-         //   Debug.Log("Ray hit");
+            //   Debug.Log("Ray hit");
             MeshCollider meshCollider = hit.collider as MeshCollider;
             if (meshCollider != null)
             {
-           //     Debug.Log("Collider found");
+                //     Debug.Log("Collider found");
                 Mesh mesh = meshCollider.sharedMesh;
                 int triIndex = hit.triangleIndex;
 
@@ -59,7 +67,7 @@ public class Select : MonoBehaviour
                 Vector3 p1 = mesh.vertices[i1];
                 Vector3 p2 = mesh.vertices[i2];
 
-              //  Debug.Log($"Hit triangle {triIndex}: verts {i0},{i1},{i2}");
+                //  Debug.Log($"Hit triangle {triIndex}: verts {i0},{i1},{i2}");
 
                 Color[] colors = mesh.colors;
                 colors[i0] = Color.red;
@@ -70,6 +78,62 @@ public class Select : MonoBehaviour
 
                 meshCollider.sharedMesh = null;
                 meshCollider.sharedMesh = mesh;
+
+            }
+        }
+    }
+    private (MeshCollider, RaycastHit) HasHitMesh()
+    {
+        //Debug.Log("Ray");
+        Ray ray = CameraToPointRay();
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            //   Debug.Log("Ray hit");
+            MeshCollider meshCollider = hit.collider as MeshCollider;
+            if (meshCollider != null)
+            {
+
+                return (meshCollider, hit);
+
+            }
+
+            return (null, hit);
+        }
+
+        return (null, default);
+
+    }
+
+    private void SpawnEntity(GameObject e)
+    {
+        if (e != null)
+        {
+            (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
+            if (meshCollider != null)
+            {
+                //     Debug.Log("Collider found");
+                Mesh mesh = meshCollider.sharedMesh;
+                Vector3[] vertices = mesh.vertices;
+                Vector3[] normals = mesh.normals;
+                
+                int triIndex = hit.triangleIndex;
+
+                int i0 = mesh.triangles[triIndex * 3 + 0];
+                int i1 = mesh.triangles[triIndex * 3 + 1];
+                int i2 = mesh.triangles[triIndex * 3 + 2];
+
+                Vector3 pos = hit.point;
+                            // Interpolate normal across the triangle instead of picking one vertex
+                Vector3 baryCenter = hit.barycentricCoordinate;
+                Vector3 normal =
+                    -normals[i0] * baryCenter.x +
+                    -normals[i1] * baryCenter.y +
+                    -normals[i2] * baryCenter.z;
+                Quaternion rot = Quaternion.FromToRotation(normal, normal.normalized);
+
+                Debug.Log("Instantiate");
+                // Parent new instances under container`
+                Instantiate(e, pos, rot, gameObject.transform);
 
             }
         }
