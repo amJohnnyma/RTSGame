@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/BuildMenuStyle.uss?fileID=7433441132597879392&amp;guid=c6e1f4add5cace6a7ad093c8fc5f1397&amp;type=3#BuildMenuStyle" />
+    <ui:Toggle label="Build Mode" name="BuildToggle" class="Toggle" />
+    <ui:Button text="Option1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BuildOption1" class="Button" />
+    <ui:Button text="Option2" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BuildOption2" class="Button" />
+    <ui:Button text="Option3" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BuildOption3" class="Button" />
+</ui:UXML>

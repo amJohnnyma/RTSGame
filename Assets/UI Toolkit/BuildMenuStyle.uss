@@ -1,0 +1,28 @@
+.Button {
+    align-items: flex-start;
+    align-self: flex-start;
+    width: 100px;
+    height: 70px;
+    min-width: auto;
+    transform-origin: center;
+    translate: 0 0;
+}
+
+.Toggle {
+}
+
+.Label {
+    translate: 0 0;
+    background-image: none;
+    border-left-color: rgb(255, 15, 15);
+    border-right-color: rgb(255, 15, 15);
+    border-top-color: rgb(255, 15, 15);
+    border-bottom-color: rgb(255, 15, 15);
+    right: auto;
+    left: 60px;
+    opacity: 1;
+    overflow: visible;
+    visibility: visible;
+    -unity-background-image-tint-color: rgb(255, 5, 5);
+    background-color: rgba(0, 0, 0, 0.51);
+}

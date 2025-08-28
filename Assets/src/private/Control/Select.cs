@@ -8,6 +8,10 @@ public class Select : MonoBehaviour
 {
 
     public List<GameObject> presets;
+
+
+    private bool canBuild;
+    private int buildOption = -1;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,7 +35,7 @@ public class Select : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log("Alpha one down");
-            SpawnEntity(presets[0]);
+            SpawnEntity();
         }
     }
 
@@ -104,38 +108,48 @@ public class Select : MonoBehaviour
 
     }
 
-    private void SpawnEntity(GameObject e)
+    private void SpawnEntity()
     {
-        if (e != null)
+        if (!canBuild || buildOption <= 0)
         {
-            (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
-            if (meshCollider != null)
-            {
-                //     Debug.Log("Collider found");
-                Mesh mesh = meshCollider.sharedMesh;
-                Vector3[] vertices = mesh.vertices;
-                Vector3[] normals = mesh.normals;
-                
-                int triIndex = hit.triangleIndex;
-
-                int i0 = mesh.triangles[triIndex * 3 + 0];
-                int i1 = mesh.triangles[triIndex * 3 + 1];
-                int i2 = mesh.triangles[triIndex * 3 + 2];
-
-                Vector3 pos = hit.point;
-                            // Interpolate normal across the triangle instead of picking one vertex
-                Vector3 baryCenter = hit.barycentricCoordinate;
-                Vector3 normal =
-                    -normals[i0] * baryCenter.x +
-                    -normals[i1] * baryCenter.y +
-                    -normals[i2] * baryCenter.z;
-                Quaternion rot = Quaternion.FromToRotation(normal, normal.normalized);
-
-                Debug.Log("Instantiate");
-                // Parent new instances under container`
-                Instantiate(e, pos, rot, gameObject.transform);
-
-            }
+            return;
         }
+
+
+        (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
+        if (meshCollider != null)
+        {
+            //     Debug.Log("Collider found");
+            Mesh mesh = meshCollider.sharedMesh;
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+
+            int triIndex = hit.triangleIndex;
+
+            int i0 = mesh.triangles[triIndex * 3 + 0];
+            int i1 = mesh.triangles[triIndex * 3 + 1];
+            int i2 = mesh.triangles[triIndex * 3 + 2];
+
+            Vector3 pos = hit.point;
+            // Interpolate normal across the triangle instead of picking one vertex
+            Vector3 baryCenter = hit.barycentricCoordinate;
+            Vector3 normal =
+                -normals[i0] * baryCenter.x +
+                -normals[i1] * baryCenter.y +
+                -normals[i2] * baryCenter.z;
+            Quaternion rot = Quaternion.FromToRotation(normal, normal.normalized);
+
+            Debug.Log("Instantiate");
+            // Parent new instances under container`
+            Instantiate(presets[buildOption-1], pos, rot, gameObject.transform);
+
+        }
+        
+    }
+
+    public void SetBuildOption(bool canBuild, int buildOption)
+    {
+        this.canBuild = canBuild;
+        this.buildOption = (buildOption == -1) ? this.buildOption : buildOption;
     }
 }
