@@ -13,6 +13,9 @@ public class IcosphereTerrain : MonoBehaviour
     private float heightScale = 1f;
 
     private PerlinColor perlinColor;
+    [SerializeField] private float scale = 0.01f;
+    [Tooltip("Set val as exponent to base 2")]
+    [SerializeField] private int perlinSize = 10;
 
 
 
@@ -35,7 +38,7 @@ public class IcosphereTerrain : MonoBehaviour
         Color[] newColors = new Color[triangles.Length];
         int[] newTris = new int[triangles.Length];
 
-        PerlinNoise noise = new PerlinNoise(seed);
+        PerlinNoise noise = new PerlinNoise(seed, perlinSize, scale);
 
         for (int i = 0; i < triangles.Length; i += 3)
         {
@@ -69,9 +72,20 @@ public class IcosphereTerrain : MonoBehaviour
             newColors[i+2] = triColor;
 
             // New triangle indices
-            newTris[i]   = i;
-            newTris[i+1] = i+1;
-            newTris[i+2] = i+2;
+            // enforce winding (swap if needed)
+            if (Vector3.Dot(Vector3.Cross(v1 - v0, v2 - v0), v0) < 0f)
+            {
+                // flip winding
+                newTris[i]   = i;
+                newTris[i+1] = i+2;
+                newTris[i+2] = i+1;
+            }
+            else
+            {
+                newTris[i]   = i;
+                newTris[i+1] = i+1;
+                newTris[i+2] = i+2;
+            }
         }
 
         // Apply back

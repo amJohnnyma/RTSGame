@@ -6,24 +6,30 @@ public class PerlinNoise
 {
     private int[] p;
 
-    public PerlinNoise(int seed)
+    private int size;
+
+    private float scale;
+
+    public PerlinNoise(int seed, int perlinSize, float scale)
     {
-        p = new int[512];
-        var perm = Enumerable.Range(0, 256).ToArray();
+        this.scale = scale;
+        size = (int)Mathf.Pow(2, perlinSize);
+        p = new int[size];
+        var perm = Enumerable.Range(0, size / 2).ToArray();
         var rand = new System.Random(seed);
 
         // shuffle
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < size / 2; i++)
         {
-            int swapIndex = rand.Next(256);
+            int swapIndex = rand.Next(size / 2);
             int tmp = perm[i];
             perm[i] = perm[swapIndex];
             perm[swapIndex] = tmp;
         }
 
-        for (int i = 0; i < 512; i++)
+        for (int i = 0; i < size; i++)
         {
-            p[i] = perm[i & 255];
+            p[i] = perm[i & ((size / 2) - 1)];
         }
     }
 
@@ -44,8 +50,9 @@ public class PerlinNoise
 
     public float Noise(float x, float y)
     {
-        int xi = (int)MathF.Floor(x) & 255;
-        int yi = (int)MathF.Floor(y) & 255;
+
+        int xi = (int)MathF.Floor(x) & ((size/2)-1);
+        int yi = (int)MathF.Floor(y) & ((size/2)-1);
 
         float xf = x - MathF.Floor(x);
         float yf = y - MathF.Floor(y);
@@ -74,7 +81,7 @@ public class PerlinNoise
             int fac = 1 << i;
             float ampl = MathF.Pow(0.5f, i);
 
-            e += ampl * Noise(fac * x, fac * y);
+            e += ampl * Noise(fac * x * scale, fac * y * scale);
             maxAmpl += ampl;
         }
 

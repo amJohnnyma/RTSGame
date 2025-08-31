@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class IcosphereGenerator
 {
@@ -75,6 +76,7 @@ public class IcosphereGenerator
         }
 
         Mesh mesh = new Mesh();
+        mesh.indexFormat = IndexFormat.UInt32;
         mesh.name = "Icosphere";
         mesh.vertices = verts.ToArray();
         mesh.triangles = faces.ToArray();

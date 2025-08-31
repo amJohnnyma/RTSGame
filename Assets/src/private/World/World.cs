@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
 using UnityEditor.Il2Cpp;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class World : MonoBehaviour
 {
@@ -73,6 +74,7 @@ public class World : MonoBehaviour
         // Generate mesh and assign
         if (meshFilter != null)
         {
+            
             meshFilter.sharedMesh = icoSphereGen.Create(radius, subdivisions);
             terrain.Init(seed, layers, flatness, height);
             terrain.Gen(meshFilter.sharedMesh);
