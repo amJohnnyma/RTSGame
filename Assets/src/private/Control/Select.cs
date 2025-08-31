@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -9,12 +10,23 @@ public class Select : MonoBehaviour
 
     public List<GameObject> presets;
 
+    [SerializeField] private World world;
+
 
     private bool canBuild;
     private int buildOption = -1;
+
+
+    [SerializeField] private MeshCollider refMesh;
+    [SerializeField] private GridHighlighter gridHighlighter;
+
     // Start is called before the first frame update
     void Start()
     {
+        if (gridHighlighter != null)
+        {
+            gridHighlighter.enabled = false;
+        }
 
     }
 
@@ -23,6 +35,7 @@ public class Select : MonoBehaviour
     {
 
         CheckInput();
+        UpdateHighlightGrid();
     }
 
     private void CheckInput()
@@ -37,6 +50,33 @@ public class Select : MonoBehaviour
             Debug.Log("Alpha one down");
             SpawnEntity();
         }
+        if (canBuild)
+        {
+            gridHighlighter.enabled = true;
+        }
+        else
+        {
+            gridHighlighter.enabled = false;
+        }
+    }
+
+    private void UpdateHighlightGrid()
+    {
+        switch (buildOption)
+        {
+            case 1:
+                gridHighlighter.setPatchRadius(1);
+                break;
+            case 2:
+                gridHighlighter.setPatchRadius(4);
+                break;
+            case 3:
+                gridHighlighter.setPatchRadius(16);
+                break;
+            case -1:
+                gridHighlighter.setPatchRadius(5);
+                break;
+        }
     }
 
     private bool MouseDown(int type)
@@ -48,6 +88,14 @@ public class Select : MonoBehaviour
     {
         return Camera.main.ScreenPointToRay(Input.mousePosition);
     }
+
+
+    private void HoverMouseSelected()
+    {
+
+
+    }
+
 
     private void RayHitMesh()
     {
@@ -130,7 +178,17 @@ public class Select : MonoBehaviour
             int i1 = mesh.triangles[triIndex * 3 + 1];
             int i2 = mesh.triangles[triIndex * 3 + 2];
 
-            Vector3 pos = hit.point;
+            Vector3 v0 = vertices[i0];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+
+            v0 = transform.TransformPoint(v0);
+            v1 = transform.TransformPoint(v1);
+            v2 = transform.TransformPoint(v2);
+
+            Vector3 pos = (v0 + v1 + v2) / 3f;
+            if (world.isPlacedEntityPresent(pos)) return;
+
             // Interpolate normal across the triangle instead of picking one vertex
             Vector3 baryCenter = hit.barycentricCoordinate;
             Vector3 normal =
@@ -141,7 +199,8 @@ public class Select : MonoBehaviour
 
             Debug.Log("Instantiate");
             // Parent new instances under container`
-            Instantiate(presets[buildOption-1], pos, rot, gameObject.transform);
+            GameObject go = Instantiate(presets[buildOption - 1], pos, rot, gameObject.transform);
+            world.AddPlacedEntity(pos, go);
 
         }
         

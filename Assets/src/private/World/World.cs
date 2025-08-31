@@ -28,6 +28,8 @@ public class World : MonoBehaviour
     private IcosphereGenerator icoSphereGen = new IcosphereGenerator();
     private IcosphereTerrain terrain;
 
+    private Dictionary<Vector3, GameObject> placedEntities = new Dictionary<Vector3, GameObject>();
+
 
     private void OnValidate()
     {
@@ -74,7 +76,7 @@ public class World : MonoBehaviour
         // Generate mesh and assign
         if (meshFilter != null)
         {
-            
+
             meshFilter.sharedMesh = icoSphereGen.Create(radius, subdivisions);
             terrain.Init(seed, layers, flatness, height);
             terrain.Gen(meshFilter.sharedMesh);
@@ -93,6 +95,20 @@ public class World : MonoBehaviour
 
     public List<float> getWorldVars()
     {
-        return new List<float> {layers, flatness, height};
+        return new List<float> { layers, flatness, height };
+    }
+
+    public void AddPlacedEntity(Vector3 key, GameObject go)
+    {
+        placedEntities[key] = go;
+    }
+    public void RemovePlacedEntity(Vector3 key)
+    {
+        placedEntities.Remove(key);
+    }
+
+    public bool isPlacedEntityPresent(Vector3 key)
+    {
+        return placedEntities.ContainsKey(key);
     }
 }
