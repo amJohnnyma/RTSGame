@@ -45,9 +45,9 @@ public class Select : MonoBehaviour
             Debug.Log("Key down");
             RayHitMesh();
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetMouseButton(0))
         {
-            Debug.Log("Alpha one down");
+            Debug.Log("Mouse down");
             SpawnEntity();
         }
         if (canBuild)

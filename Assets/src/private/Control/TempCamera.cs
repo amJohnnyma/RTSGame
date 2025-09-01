@@ -35,16 +35,6 @@ public class TempCamera : MonoBehaviour
         pitch -= v * speed * Time.deltaTime;
         pitch = Mathf.Clamp(pitch, -89f, 89f);
 
-        if (Input.GetKey(KeyCode.Q))
-        {
-            distance -= zoomSpeed * Time.deltaTime;
-        }
-        if (Input.GetKey(KeyCode.E))
-        {
-            distance += zoomSpeed * Time.deltaTime;
-        }
-
-        distance = Mathf.Clamp(distance, minDistance, maxDistance);
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
         Vector3 dir = rotation * Vector3.forward;
