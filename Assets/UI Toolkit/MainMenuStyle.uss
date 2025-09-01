@@ -1,15 +1,16 @@
-.header {
-    font-size: 40px;
-}
-
-.button {
-    font-size: 20px;
-    width: 220px;
-    height: 60px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    justify-content: center;
-    align-self: center;
+.buildOption {
+    background-image: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=8228938214290033325&guid=8d8681264066a3104b6fbf0f2f9ebdd1&type=3#console.erroricon");
+    width: 50px;
+    height: 50px;
+    -unity-text-align: lower-center;
+    -unity-slice-bottom: 0;
+    border-left-width: 0;
+    border-bottom-width: 0;
+    -unity-slice-right: 0;
+    border-bottom-left-radius: 0;
+    border-top-width: 0;
+    align-self: auto;
+    justify-content: flex-start;
+    align-items: auto;
+    font-size: 28px;
 }

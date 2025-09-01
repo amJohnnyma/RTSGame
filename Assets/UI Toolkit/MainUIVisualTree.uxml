@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=1c8dc2a894132b94c878da8136b737a0&amp;type=3#MainMenuStyle" />
+    <ui:VisualElement name="Main" style="flex-grow: 1;">
+        <ui:VisualElement name="Build" style="flex-grow: 1;">
+            <ui:VisualElement name="Options" style="flex-grow: 1; justify-content: center; align-self: center; bottom: auto; top: 0%; align-items: auto; flex-direction: row; width: 80%; height: 50px;">
+                <ui:Label tabindex="-1" text="1" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option1Build" class="buildOption" style="background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-6090568113533005507&amp;guid=8d8681264066a3104b6fbf0f2f9ebdd1&amp;type=3#check&quot;);" />
+                <ui:Label tabindex="-1" text="2" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option2Build" class="buildOption" style="background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=8300712400058098730&amp;guid=8d8681264066a3104b6fbf0f2f9ebdd1&amp;type=3#dropdown-arrow@2x&quot;);" />
+                <ui:Label tabindex="-1" text="3" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option3Build" class="buildOption" style="background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=4154780841294389669&amp;guid=8d8681264066a3104b6fbf0f2f9ebdd1&amp;type=3#arrow-down&quot;);" />
+                <ui:Label tabindex="-1" text="4" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option4Build" class="buildOption" style="background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2346436936791262179&amp;guid=8d8681264066a3104b6fbf0f2f9ebdd1&amp;type=3#console.infoicon&quot;);" />
+                <ui:Label tabindex="-1" text="B" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option5Build" class="buildOption" style="background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=4584671053970592468&amp;guid=8d8681264066a3104b6fbf0f2f9ebdd1&amp;type=3#console.warnicon&quot;);" />
+                <ui:Label tabindex="-1" text="C" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Option6Build" class="buildOption" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
