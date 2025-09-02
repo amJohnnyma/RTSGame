@@ -199,7 +199,8 @@ public class Select : MonoBehaviour
 
             Debug.Log("Instantiate");
             // Parent new instances under container`
-            GameObject go = Instantiate(presets[buildOption - 1], pos, rot, gameObject.transform);
+            GameObject go = Instantiate(presets[buildOption - 1], pos, rot, gameObject.transform) as GameObject;
+            go.tag = "Entity";
             world.AddPlacedEntity(pos, go);
 
         }
