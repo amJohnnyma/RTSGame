@@ -28,17 +28,17 @@ public class EntityMovementManager : MonoBehaviour
 
             // Score points toward target
             
-                        float bestScore = float.MinValue;
-                        int bestIdx = 0;
-                        for (int j = 0; j < nearbyPoints.Length; j++)
-                        {
-                            float score = 1f / ((nearbyPoints[j] - targetPositions[i]).sqrMagnitude + 0.001f);
-                            if (score > bestScore)
-                            {
-                                bestScore = score;
-                                bestIdx = j;
-                            }
-                        }
+            float bestScore = float.MinValue;
+            int bestIdx = 0;
+            for (int j = 0; j < nearbyPoints.Length; j++)
+            {
+                float score = 1f / ((nearbyPoints[j] - targetPositions[i]).magnitude+ 0.001f);
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestIdx = j;
+                }
+            }
             /*
             // Compute weights
             float[] weights = new float[nearbyPoints.Length];

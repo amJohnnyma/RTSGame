@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 public class BuildMenu : MonoBehaviour
 {
     private bool buildMode = false;
+    private bool destroyMode = false;
 
     [SerializeField] private GameObject sphere;
     [SerializeField] private UIDocument document;
@@ -14,7 +15,7 @@ public class BuildMenu : MonoBehaviour
     private void Awake()
     {
         select = sphere.GetComponent<Select>();
-        
+
 
     }
 
@@ -34,8 +35,21 @@ public class BuildMenu : MonoBehaviour
 
     public void ToggleBuildMode()
     {
+
+        destroyMode = false;
+
         buildMode = !buildMode;
         select.SetBuildOption(buildMode, -1);
 
+    }
+
+    public void ToggleDestroyMode()
+    {
+        buildMode = false;
+    
+
+        destroyMode = !destroyMode;
+        select.SetDestroyOption(destroyMode);
+        
     }
 }

@@ -43,8 +43,10 @@ public class InputManager : MonoBehaviour
             case "toggleBM": // build mode
                 buildMenu.ToggleBuildMode();
                 break;
-            case "toggleDM": // destroy mode
-                //buildMenu.ToggleBuildMode();
+            case "toggleCM": // destroy mode
+                buildMenu.ToggleDestroyMode();
+                break;
+            case null:
                 break;
             
         }

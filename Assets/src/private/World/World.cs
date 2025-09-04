@@ -101,10 +101,14 @@ public class World : MonoBehaviour
     public void AddPlacedEntity(Vector3 key, GameObject go)
     {
         placedEntities[key] = go;
+        Debug.Log("Added at " + key.ToString());
     }
-    public void RemovePlacedEntity(Vector3 key)
+    public void DestroyPlacedEntity(Vector3 key)
     {
+        Destroy(placedEntities[key]);
         placedEntities.Remove(key);
+        Debug.Log("Destroy at " + key.ToString());
+
     }
 
     public bool isPlacedEntityPresent(Vector3 key)

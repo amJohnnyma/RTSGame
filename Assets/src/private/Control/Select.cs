@@ -14,6 +14,7 @@ public class Select : MonoBehaviour
 
 
     private bool canBuild;
+    private bool canDestroy;
     private int buildOption = -1;
 
 
@@ -45,12 +46,25 @@ public class Select : MonoBehaviour
             Debug.Log("Key down");
             RayHitMesh();
         }
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0)) 
         {
             Debug.Log("Mouse down");
-            SpawnEntity();
+            if (canBuild)
+            {
+                Debug.Log("Build");
+                SpawnEntity();
+            }
+            else if (canDestroy)
+            {
+                Debug.Log("Destroy");
+                DestroyEntity();
+            }
+            else
+            {
+                Debug.Log("None");  
+            }
         }
-        if (canBuild)
+        if (canBuild || canDestroy)
         {
             gridHighlighter.enabled = true;
         }
@@ -74,7 +88,7 @@ public class Select : MonoBehaviour
                 gridHighlighter.setPatchRadius(16);
                 break;
             case -1:
-                gridHighlighter.setPatchRadius(5);
+                gridHighlighter.setPatchRadius(1);
                 break;
         }
     }
@@ -204,12 +218,58 @@ public class Select : MonoBehaviour
             world.AddPlacedEntity(pos, go);
 
         }
-        
+
+    }
+
+    private void DestroyEntity()
+    {
+        if (!canDestroy)
+        {
+            return;
+        }
+
+
+        (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
+        if (meshCollider != null)
+        {
+            //     Debug.Log("Collider found");
+            Mesh mesh = meshCollider.sharedMesh;
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+
+            int triIndex = hit.triangleIndex;
+
+            int i0 = mesh.triangles[triIndex * 3 + 0];
+            int i1 = mesh.triangles[triIndex * 3 + 1];
+            int i2 = mesh.triangles[triIndex * 3 + 2];
+
+            Vector3 v0 = vertices[i0];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+
+            v0 = transform.TransformPoint(v0);
+            v1 = transform.TransformPoint(v1);
+            v2 = transform.TransformPoint(v2);
+
+            Vector3 pos = (v0 + v1 + v2) / 3f;
+            Debug.Log("Destroy");
+            if (world.isPlacedEntityPresent(pos)) world.DestroyPlacedEntity(pos);
+
+        }
+
     }
 
     public void SetBuildOption(bool canBuild, int buildOption)
     {
         this.canBuild = canBuild;
+        this.canDestroy = false;
         this.buildOption = (buildOption == -1) ? this.buildOption : buildOption;
+    }
+
+    public void SetDestroyOption(bool canDestroy)
+    {
+        this.buildOption = -1;
+        this.canBuild = false;
+        this.canDestroy = canDestroy;
     }
 }
