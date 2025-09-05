@@ -76,9 +76,6 @@ public class EntityMovementManager : MonoBehaviour
             */
             entity.chosenScore = bestIdx;
 
-            // Compute tangent movement direction
-            Vector3 groundNormal = Vector3.up; // placeholder, real normal will be corrected on main thread
-            entity.nextMoveDir = Vector3.ProjectOnPlane(nearbyPoints[bestIdx] - positions[i], groundNormal).normalized;
         });
 
         // --- Phase 2: Main thread - raycast to terrain and move Rigidbody ---
@@ -99,9 +96,15 @@ public class EntityMovementManager : MonoBehaviour
                 Vector3 groundPoint = hit.point;
                 Vector3 groundNormal = hit.normal;
 
+                Vector3 tangentDir = Vector3.ProjectOnPlane(
+                    entity.lastNearbyPoints[entity.chosenScore] - entity.transform.position,
+                    hit.normal
+
+                ).normalized;
+
 
                 // Apply velocity along tangent (from parallel calculation)
-                Vector3 desiredVel = Vector3.ProjectOnPlane(entity.nextMoveDir, groundNormal).normalized * entity.moveSpeed;
+                Vector3 desiredVel = tangentDir * entity.moveSpeed;
                 entity.rb.velocity = Vector3.Lerp(entity.rb.velocity, desiredVel, Time.fixedDeltaTime * entity.turnSpeed);
 
                 // Stick to terrain surface
