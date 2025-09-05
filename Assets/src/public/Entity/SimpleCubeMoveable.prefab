@@ -149,14 +149,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
+  home: {fileID: 0}
+  mainTarget: {fileID: 0}
   worldCollider: {fileID: 0}
+  returningHome: 1
   moveSpeed: 30
   turnSpeed: 5
   surfaceOffset: 1
-  raycastDownDist: 10
+  raycastDownDist: 5
   stopFollowDist: 2
   radius: 10
-  checkPoints: 128
+  checkPoints: 256
   rb: {fileID: 0}
   nextMoveDir: {x: 0, y: 0, z: 0}
   lastNearbyPoints: []

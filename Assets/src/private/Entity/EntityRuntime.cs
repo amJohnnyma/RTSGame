@@ -5,7 +5,11 @@ public class EntityRuntime : MonoBehaviour
 {
     [Header("References")]
     public Transform target;
+    public Transform home;
+    public Transform mainTarget;
     public Collider worldCollider;
+
+    public bool returningHome = true;
 
 
     [Header("Movement Settings")]

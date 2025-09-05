@@ -14,7 +14,15 @@ public class EntityMovementManager : MonoBehaviour
         for (int i = 0; i < entities.Length; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
-            targetPositions[i] = entities[i].target.position;   // main thread copy
+            targetPositions[i] = (entities[i].returningHome) ? entities[i].home.position : entities[i].mainTarget.position;   // main thread copy
+            if (entities[i].returningHome)
+            {
+                entities[i].target = entities[i].home;
+            }
+            else
+            {
+                entities[i].target = entities[i].mainTarget;
+            }
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Length, i =>
@@ -86,6 +94,7 @@ public class EntityMovementManager : MonoBehaviour
             if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)
             {
                 entity.rb.velocity = Vector3.zero;
+               // entity.returningHome = !entity.returningHome;
                 continue;
             }
 
