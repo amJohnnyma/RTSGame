@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3385230137350559989}
   - component: {fileID: 8417543535448308597}
   - component: {fileID: -3559880363568511295}
+  - component: {fileID: -3909101850547595069}
   m_Layer: 0
   m_Name: TreeOb
   m_TagString: Untagged
@@ -99,5 +100,28 @@ MonoBehaviour:
   moveable: 0
   health: 10
   type: TreeObj
+  eTag: EntitySelectable
   attacks: []
   defences: []
+--- !u!64 &-3909101850547595069
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2470555075743252025}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}

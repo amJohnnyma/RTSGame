@@ -5,55 +5,85 @@ public class EntitySpawner : MonoBehaviour
 {
 
     public List<Entity> presets;
-    private GameObject spawnContainer;
+    public GameObject spawnContainer;
 
-    public void SpawnOnTerrain(Mesh terrainMesh)
+    public void SpawnOnTerrain(Mesh terrainMesh, Transform terrainTransform)
     {
         Debug.Log("Spawn on terrain");
 
-
-        // Destroy old container if it exists
-        if (spawnContainer != null)
+        if (spawnContainer == null)
         {
-            DestroyImmediate(spawnContainer); // or Destroy() if called at runtime
+            return;
         }
 
-        // Create a new container        
-        spawnContainer = new GameObject("SpawnContainer");
-        spawnContainer.transform.parent = transform;
+        for (int i = spawnContainer.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(spawnContainer.transform.GetChild(i).gameObject);
+        }
 
         Vector3[] vertices = terrainMesh.vertices;
         Vector3[] normals = terrainMesh.normals;
+        float maxH = float.MinValue;
+        float minH = float.MaxValue;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector3 worldPos = terrainTransform.TransformPoint(vertices[i]);
+            float h = worldPos.magnitude;
+            if (h < minH) minH = h;
+            if (h > maxH) maxH = h;
+
+        }
+        Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
+        
 
         foreach (var preset in presets)
         {
-            //temp
-            float minH = float.MaxValue;
-            float maxH = float.MinValue;
-            //
+
             for (int i = 0; i < vertices.Length; i++)
             {
-                float h = vertices[i].magnitude; // height above sphere radius
-                if (h < minH) minH = h;
-                if (h > maxH) maxH = h;
-                float slope = Vector3.Dot(normals[i], vertices[i].normalized);
+                // Convert to world space
+                Vector3 worldPos = terrainTransform.TransformPoint(vertices[i]);
+                Vector3 worldNormal = terrainTransform.TransformDirection(normals[i]);
 
+                float h = Mathf.InverseLerp(minH, maxH, worldPos.magnitude);
 
-                if (h >= (preset.minHeight) && h <= (preset.maxHeight) &&
+                float slope = Vector3.Dot(worldNormal, worldPos.normalized);
+
+                if (h >= preset.minHeight && h <= preset.maxHeight &&
                     slope >= preset.slopeThreshold &&
                     Random.value < preset.density)
                 {
+                    // Orientation aligned with surface
+                    Quaternion rot = Quaternion.FromToRotation(Vector3.up, worldNormal);
 
-                    Vector3 pos = vertices[i];
-                    Quaternion rot = Quaternion.FromToRotation(Vector3.up, normals[i]);
+                    // Instantiate
+                    GameObject go = Instantiate(preset.prefab, worldPos, rot, spawnContainer.transform);
 
-                    // Parent new instances under container
-                    Instantiate(preset.prefab, pos, rot, spawnContainer.transform);
+                    // === FLUSH PLACEMENT ===
+                    // Try to offset based on prefab bounds
+                    Collider col = go.GetComponentInChildren<Collider>();
+                    float offset = 0f;
+
+                    if (col != null)
+                    {
+                        offset = col.bounds.extents.y; // half height
+                    }
+                    else
+                    {
+                        Renderer rend = go.GetComponentInChildren<Renderer>();
+                        if (rend != null)
+                            offset = rend.bounds.extents.y;
+                    }
+
+                    // Move slightly above the surface
+                    go.transform.position += worldNormal * offset;
                 }
             }
-            Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
+
         }
     }
+
 
     
 }

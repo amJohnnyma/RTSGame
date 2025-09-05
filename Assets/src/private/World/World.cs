@@ -40,6 +40,7 @@ public class World : MonoBehaviour
     private void Start()
     {
         CreateIcosphere();
+        spawner.SpawnOnTerrain(meshFilter.sharedMesh, this.gameObject.transform);
     }
 
 
@@ -84,7 +85,6 @@ public class World : MonoBehaviour
             meshCollider.sharedMesh = null;
             meshCollider.sharedMesh = meshFilter.sharedMesh;
 
-            spawner.SpawnOnTerrain(meshFilter.sharedMesh);
 
         }
 
