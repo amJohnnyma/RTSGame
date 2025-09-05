@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Select : MonoBehaviour
 {
@@ -11,10 +12,14 @@ public class Select : MonoBehaviour
     public List<GameObject> presets;
 
     [SerializeField] private World world;
+    [SerializeField] private UIDocument entityPopup;
+    private VisualElement popupRoot;
 
 
-    private bool canBuild;
-    private bool canDestroy;
+//temporary public
+    public bool canBuild;
+    public bool canDestroy;
+    public bool isSelecting;
     private int buildOption = -1;
 
 
@@ -28,6 +33,10 @@ public class Select : MonoBehaviour
         {
             gridHighlighter.enabled = false;
         }
+
+        popupRoot = entityPopup.rootVisualElement;
+        popupRoot.style.display = DisplayStyle.None;
+
 
     }
 
@@ -46,7 +55,7 @@ public class Select : MonoBehaviour
             Debug.Log("Key down");
             RayHitMesh();
         }
-        if (Input.GetMouseButton(0)) 
+        if (Input.GetMouseButton(0))
         {
             Debug.Log("Mouse down");
             if (canBuild)
@@ -59,12 +68,17 @@ public class Select : MonoBehaviour
                 Debug.Log("Destroy");
                 DestroyEntity();
             }
+            else if (isSelecting)
+            {
+                Debug.Log("Select");
+                SelectEntity();
+            }
             else
             {
-                Debug.Log("None");  
+                Debug.Log("None");
             }
         }
-        if (canBuild || canDestroy)
+        if (canBuild || canDestroy || isSelecting)
         {
             gridHighlighter.enabled = true;
         }
@@ -258,11 +272,156 @@ public class Select : MonoBehaviour
         }
 
     }
+    private void SelectEntity()
+    {
+        if (!isSelecting)
+        {
+            return;
+        }
+
+        (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
+        GameObject go = null;
+        if (meshCollider != null)
+        {
+            try
+            {
+            Mesh mesh = meshCollider.sharedMesh;
+            Vector3[] vertices = mesh.vertices;
+
+            int triIndex = hit.triangleIndex;
+
+            int i0 = mesh.triangles[triIndex * 3 + 0];
+            int i1 = mesh.triangles[triIndex * 3 + 1];
+            int i2 = mesh.triangles[triIndex * 3 + 2];
+
+            Vector3 v0 = transform.TransformPoint(vertices[i0]);
+            Vector3 v1 = transform.TransformPoint(vertices[i1]);
+            Vector3 v2 = transform.TransformPoint(vertices[i2]);
+
+            Vector3 pos = (v0 + v1 + v2) / 3f;
+            go = world.GetPlacedEntity(pos);
+
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+            }
+            Debug.Log("Select");
+
+            // first try placed entity
+
+            if (go == null)
+            {
+                // fallback: the meshCollider object itself
+                go = hit.collider.gameObject;
+            }
+
+            if (go != null)
+            {
+                popupRoot.style.display = DisplayStyle.Flex;
+                Label nameLbl = popupRoot.Q<Label>("nameLbl");
+
+                EntityStats stats = go.GetComponent<EntityStats>();
+                if (stats == null)
+                {
+                    popupRoot.style.display = DisplayStyle.None;
+                    return;
+                }
+                nameLbl.text =  stats.ToString();
+            }
+            else
+            {
+                popupRoot.style.display = DisplayStyle.None;
+            }
+        }
+    }
+
+    /*
+    private (Collider, RaycastHit) HasHitCollider()
+    {
+        Ray ray = CameraToPointRay();
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            return (hit.collider, hit);
+        }
+        return (null, default);
+    }
+
+    private void SelectEntity()
+    {
+        if (!isSelecting)
+        {
+            return;
+        }
+
+
+        (Collider collider, RaycastHit hit) = HasHitCollider();
+        MeshCollider meshCollider = (collider as MeshCollider);
+        GameObject go;
+        if (meshCollider != null && collider.CompareTag("World"))
+        {
+            Mesh mesh = meshCollider.sharedMesh;
+            //     Debug.Log("Collider found");
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+
+            int triIndex = hit.triangleIndex;
+
+            int i0 = mesh.triangles[triIndex * 3 + 0];
+            int i1 = mesh.triangles[triIndex * 3 + 1];
+            int i2 = mesh.triangles[triIndex * 3 + 2];
+
+            Vector3 v0 = vertices[i0];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+
+            v0 = transform.TransformPoint(v0);
+            v1 = transform.TransformPoint(v1);
+            v2 = transform.TransformPoint(v2);
+
+            Vector3 pos = (v0 + v1 + v2) / 3f;
+            Debug.Log("Select");
+            go = world.GetPlacedEntity(pos);
+            if (go == null)
+            {
+                // do another check for other colliders
+                go = collider.gameObject;
+            }
+
+        }
+        else
+        {
+            go = collider.gameObject;
+        }
+
+        if (go != null)
+        {
+            popupRoot.style.display = DisplayStyle.Flex;
+            Label nameLbl = popupRoot.Q<Label>("nameLbl");
+
+            EntityStats stats = go.GetComponent<EntityStats>();
+            if (stats == null)
+            {
+                popupRoot.style.display = DisplayStyle.None;
+                return;
+            }
+            nameLbl.text = stats.ToString();
+
+
+        }
+        else
+        {
+            popupRoot.style.display = DisplayStyle.None;
+        }
+
+    }
+    */
 
     public void SetBuildOption(bool canBuild, int buildOption)
     {
         this.canBuild = canBuild;
         this.canDestroy = false;
+        this.isSelecting = false;
         this.buildOption = (buildOption == -1) ? this.buildOption : buildOption;
     }
 
@@ -270,6 +429,19 @@ public class Select : MonoBehaviour
     {
         this.buildOption = -1;
         this.canBuild = false;
+        this.isSelecting = false;
         this.canDestroy = canDestroy;
+    }
+
+    public void SetSelectOption(bool isSelecting)
+    {
+        this.canBuild = false;
+        this.canDestroy = false;
+        this.buildOption = -1;
+        this.isSelecting = isSelecting;
+        if (!this.isSelecting)
+        {
+            popupRoot.style.display = DisplayStyle.None;
+        }
     }
 }

@@ -14,6 +14,7 @@ public class InputManager : MonoBehaviour
     public List<InputBinding> bindings;
 
     public BuildMenu buildMenu;
+    
 
     void Update()
     {
@@ -45,6 +46,9 @@ public class InputManager : MonoBehaviour
                 break;
             case "toggleCM": // destroy mode
                 buildMenu.ToggleDestroyMode();
+                break;
+            case "toggleSM": //select mode
+                buildMenu.ToggleSelectMode();
                 break;
             case null:
                 break;

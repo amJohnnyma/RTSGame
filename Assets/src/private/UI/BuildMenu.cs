@@ -7,6 +7,7 @@ public class BuildMenu : MonoBehaviour
 {
     private bool buildMode = false;
     private bool destroyMode = false;
+    private bool selectMode = false;
 
     [SerializeField] private GameObject sphere;
     [SerializeField] private UIDocument document;
@@ -46,10 +47,18 @@ public class BuildMenu : MonoBehaviour
     public void ToggleDestroyMode()
     {
         buildMode = false;
-    
+
 
         destroyMode = !destroyMode;
         select.SetDestroyOption(destroyMode);
-        
+
+    }
+
+    public void ToggleSelectMode()
+    {
+        destroyMode = false;
+        buildMode = false;
+        selectMode = !selectMode;
+        select.SetSelectOption(selectMode);
     }
 }

@@ -110,6 +110,14 @@ public class World : MonoBehaviour
         Debug.Log("Destroy at " + key.ToString());
 
     }
+    public GameObject GetPlacedEntity(Vector3 key)
+    {
+        if (isPlacedEntityPresent(key))
+        {
+            return placedEntities[key];
+        }
+        return null;
+    }
 
     public bool isPlacedEntityPresent(Vector3 key)
     {

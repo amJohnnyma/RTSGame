@@ -7,6 +7,7 @@ public class EntityRuntime : MonoBehaviour
     public Transform target;
     public Collider worldCollider;
 
+
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float turnSpeed = 5f;

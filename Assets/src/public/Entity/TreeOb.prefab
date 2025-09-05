@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5713334900313763143}
   - component: {fileID: 3385230137350559989}
   - component: {fileID: 8417543535448308597}
+  - component: {fileID: -3559880363568511295}
   m_Layer: 0
   m_Name: TreeOb
   m_TagString: Untagged
@@ -83,3 +84,20 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2470555075743252025}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &-3559880363568511295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2470555075743252025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88c4c8c2994160a9a825ed5abc13abcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveable: 0
+  health: 10
+  type: TreeObj
+  attacks: []
+  defences: []

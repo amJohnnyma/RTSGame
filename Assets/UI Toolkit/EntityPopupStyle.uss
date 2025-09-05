@@ -1,0 +1,4 @@
+.nameLbl {
+    font-size: 20px;
+    text-overflow: ellipsis;
+}

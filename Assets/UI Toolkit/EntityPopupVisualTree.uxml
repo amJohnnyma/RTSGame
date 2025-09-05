@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/EntityPopupStyle.uss?fileID=7433441132597879392&amp;guid=3fada4e4e9baed525b8fa0e1ddb6874e&amp;type=3#EntityPopupStyle" />
+    <ui:VisualElement style="flex-grow: 1; align-self: flex-end; top: 1px; right: 1px; background-color: rgb(255, 255, 255); width: 30%; height: 10%; align-items: flex-start;">
+        <ui:Label tabindex="-1" text="Null" parse-escape-sequences="true" display-tooltip-when-elided="true" name="nameLbl" class="nameLbl" />
+    </ui:VisualElement>
+</ui:UXML>
