@@ -50,4 +50,22 @@ public class EntityRuntime : MonoBehaviour
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, radius);
     }
+
+    public void SetTargetHome()
+    {
+
+    }
+
+    public void SetTargetTarget()
+    {
+
+    }
+
+    public void SetTargetToggle()
+    {
+        target = (returningHome) ? home : mainTarget;
+        returningHome = !returningHome;
+
+
+    }
 }

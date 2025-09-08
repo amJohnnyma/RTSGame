@@ -14,15 +14,7 @@ public class EntityMovementManager : MonoBehaviour
         for (int i = 0; i < entities.Length; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
-            targetPositions[i] = (entities[i].returningHome) ? entities[i].home.position : entities[i].mainTarget.position;   // main thread copy
-            if (entities[i].returningHome)
-            {
-                entities[i].target = entities[i].home;
-            }
-            else
-            {
-                entities[i].target = entities[i].mainTarget;
-            }
+            targetPositions[i] = entities[i].target.transform.position;   // main thread copy
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Length, i =>
@@ -40,7 +32,7 @@ public class EntityMovementManager : MonoBehaviour
             int bestIdx = 0;
             for (int j = 0; j < nearbyPoints.Length; j++)
             {
-                float score = 1f / ((nearbyPoints[j] - targetPositions[i]).magnitude+ 0.001f);
+                float score = 1f / ((nearbyPoints[j] - targetPositions[i]).sqrMagnitude+ 0.001f);
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -94,7 +86,7 @@ public class EntityMovementManager : MonoBehaviour
             if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)
             {
                 entity.rb.velocity = Vector3.zero;
-               // entity.returningHome = !entity.returningHome;
+                entity.SetTargetToggle();
                 continue;
             }
 
@@ -105,11 +97,17 @@ public class EntityMovementManager : MonoBehaviour
                 Vector3 groundPoint = hit.point;
                 Vector3 groundNormal = hit.normal;
 
-                Vector3 tangentDir = Vector3.ProjectOnPlane(
-                    entity.lastNearbyPoints[entity.chosenScore] - entity.transform.position,
-                    hit.normal
+                Vector3 moveVec = entity.lastNearbyPoints[entity.chosenScore] - entity.transform.position;
+                Vector3 tangentDir = Vector3.ProjectOnPlane(moveVec, hit.normal);
+                if (tangentDir.sqrMagnitude < 0.0001f)
+                {
+                    tangentDir = Vector3.Cross(hit.normal, Vector3.forward).normalized; // fallback tangent
+                }
+                else
+                {
+                    tangentDir.Normalize();
+                }
 
-                ).normalized;
 
 
                 // Apply velocity along tangent (from parallel calculation)
@@ -122,6 +120,12 @@ public class EntityMovementManager : MonoBehaviour
                 // Align rotation with terrain
                 Quaternion targetRot = Quaternion.FromToRotation(entity.transform.up, groundNormal) * entity.transform.rotation;
                 entity.rb.MoveRotation(Quaternion.Slerp(entity.rb.rotation, targetRot, Time.fixedDeltaTime * entity.turnSpeed));
+                entity.rb.AddForce(-entity.transform.up * 20f, ForceMode.Acceleration);
+
+            }
+            else
+            {
+                entity.rb.velocity = Vector3.zero;
             }
         }
     }
