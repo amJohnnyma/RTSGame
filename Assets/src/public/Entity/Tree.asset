@@ -16,5 +16,5 @@ MonoBehaviour:
   minHeight: 0.05
   maxHeight: 0.2
   slopeThreshold: 0.7
-  density: 0.0005
+  density: 0.001
   tagName: Entity
