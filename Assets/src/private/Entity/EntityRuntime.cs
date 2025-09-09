@@ -63,9 +63,24 @@ public class EntityRuntime : MonoBehaviour
 
     public void SetTargetToggle()
     {
-        target = (returningHome) ? home : mainTarget;
-        returningHome = !returningHome;
+        //this will be replaced with whatever the purpose is of the Entity (fetch, retrieve, etc etc)
+        if (target == mainTarget)
+        {
+            mainTarget.gameObject.GetComponent<Inventory>().GiveItemToOther("Item", 1, this.GetComponent<Inventory>());
+        }
+        else if (target == home)
+        {
+            this.GetComponent<Inventory>().GiveItemToOther("Item", int.MaxValue, home.gameObject.GetComponent<Inventory>());
 
+        }
+        else
+        {
+            Debug.Log("Error inv trans");
+
+        }
+        target = (!returningHome) ? home : mainTarget;
+
+        returningHome = !returningHome;
 
     }
 }
