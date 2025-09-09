@@ -34,6 +34,8 @@ public class EntityRuntime : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
+
+        target = (target == null) ? home : target;
     }
 
     private void OnDrawGizmos()
@@ -66,11 +68,11 @@ public class EntityRuntime : MonoBehaviour
         //this will be replaced with whatever the purpose is of the Entity (fetch, retrieve, etc etc)
         if (target == mainTarget)
         {
-            mainTarget.gameObject.GetComponent<Inventory>().GiveItemToOther("Item", 1, this.GetComponent<Inventory>());
+            mainTarget.gameObject.GetComponent<Inventory>().GiveItemToOther("Red_Flower", 1, this.GetComponent<Inventory>());
         }
         else if (target == home)
         {
-            this.GetComponent<Inventory>().GiveItemToOther("Item", int.MaxValue, home.gameObject.GetComponent<Inventory>());
+            this.GetComponent<Inventory>().GiveItemToOther("Red_Flower", int.MaxValue, home.gameObject.GetComponent<Inventory>());
 
         }
         else

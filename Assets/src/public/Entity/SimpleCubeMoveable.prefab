@@ -177,6 +177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88c4c8c2994160a9a825ed5abc13abcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  name: default
   moveable: 1
   health: 10
   type: SimpleCubeMoveable
@@ -195,11 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb02b0a4dda8ff22b851dda173fd1a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  allowedItems:
-  - {fileID: 11400000, guid: c0b6c3af080ebe11bb97f33e1bff1859, type: 2}
-  - {fileID: 11400000, guid: 3cbef1daa9f8149b08dd6b1d3bbb19ca, type: 2}
-  - {fileID: 11400000, guid: 00aa77bdddbe8d4e2a4f716464695985, type: 2}
-  - {fileID: 11400000, guid: f2013d47334ac0f50901f795836d8d17, type: 2}
+  allowedItems: []
   itemStorage:
     keys: []
     values: 

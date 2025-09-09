@@ -208,11 +208,11 @@ MonoBehaviour:
   mainTarget: {fileID: 0}
   worldCollider: {fileID: 0}
   returningHome: 1
-  moveSpeed: 10
+  moveSpeed: 7
   turnSpeed: 5
   surfaceOffset: 1
   raycastDownDist: 5
-  stopFollowDist: 1
+  stopFollowDist: 2
   radius: 5
   checkPoints: 128
   rb: {fileID: 0}
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88c4c8c2994160a9a825ed5abc13abcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  name: default
+  entityName: Ghost_Harvest
   moveable: 0
   health: 10
   type: NoType

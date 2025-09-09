@@ -70,7 +70,7 @@ public struct DefenseType
 public class EntityStats : MonoBehaviour
 {
 
-    public string name = "default";
+    public string entityName = "default";
     public int moveable = 0; // incase i want different moveable types
     public float health = 10; // entity hit points
 
@@ -97,7 +97,7 @@ public class EntityStats : MonoBehaviour
             ? string.Join("\n    ", defences)
             : "None";
 
-        return $"EntityStats(Name={name}, Type={type}, Health={health}, Moveable={moveable})\n" +
+        return $"EntityStats(Name={entityName}, Type={type}, Health={health}, Moveable={moveable})\n" +
                $"  {teamData}\n" +
                $"  Attacks:\n    {atkStr}\n" +
                $"  Defences:\n    {defStr}";

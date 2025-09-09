@@ -74,7 +74,9 @@ public class EntitySpawner : MonoBehaviour
                     Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal);
 
                     // Instantiate
-                    GameObject go = Instantiate(preset.prefab, pos, rot, spawnContainer.transform);
+                    GameObject go = Instantiate(preset.prefab, pos, rot);
+                    go.transform.SetParent(spawnContainer.transform, true);
+                    //go.transform.localScale = Vector3.one;
                     world.AddPlacedEntity(pos, go);
 
                     // Offset based on collider or renderer

@@ -271,49 +271,51 @@ public class Select : MonoBehaviour
         }
 
     }
+
+
     private void SelectEntity()
     {
         if (!isSelecting)
-        {
             return;
-        }
 
         (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
         GameObject go = null;
-        if (meshCollider != null)
+
+        if (hit.collider != null)
         {
             try
             {
-            Mesh mesh = meshCollider.sharedMesh;
-            Vector3[] vertices = mesh.vertices;
+                if (meshCollider != null)
+                {
+                    // Mesh-based selection (calculate triangle center)
+                    Mesh mesh = meshCollider.sharedMesh;
+                    Vector3[] vertices = mesh.vertices;
 
-            int triIndex = hit.triangleIndex;
+                    int triIndex = hit.triangleIndex;
+                    int i0 = mesh.triangles[triIndex * 3 + 0];
+                    int i1 = mesh.triangles[triIndex * 3 + 1];
+                    int i2 = mesh.triangles[triIndex * 3 + 2];
 
-            int i0 = mesh.triangles[triIndex * 3 + 0];
-            int i1 = mesh.triangles[triIndex * 3 + 1];
-            int i2 = mesh.triangles[triIndex * 3 + 2];
+                    Vector3 v0 = meshCollider.transform.TransformPoint(vertices[i0]);
+                    Vector3 v1 = meshCollider.transform.TransformPoint(vertices[i1]);
+                    Vector3 v2 = meshCollider.transform.TransformPoint(vertices[i2]);
 
-            Vector3 v0 = transform.TransformPoint(vertices[i0]);
-            Vector3 v1 = transform.TransformPoint(vertices[i1]);
-            Vector3 v2 = transform.TransformPoint(vertices[i2]);
+                    Vector3 pos = (v0 + v1 + v2) / 3f;
 
-            Vector3 pos = (v0 + v1 + v2) / 3f;
-            go = world.GetPlacedEntity(pos);
+                    // Check if world has a placed entity at this pos
+                    go = world.GetPlacedEntity(pos);
+                }
 
+                // If no placed entity found, fall back to the hit object itself
+                if (go == null)
+                    go = hit.collider.gameObject;
             }
             catch (Exception e)
             {
-                Debug.Log(e);
+                Debug.LogError(e);
             }
+
             Debug.Log("Select");
-
-            // first try placed entity
-
-            if (go == null)
-            {
-                // fallback: the meshCollider object itself
-                go = hit.collider.gameObject;
-            }
 
             if (go != null)
             {
@@ -326,7 +328,8 @@ public class Select : MonoBehaviour
                     popupRoot.style.display = DisplayStyle.None;
                     return;
                 }
-                nameLbl.text =  stats.ToString();
+
+                nameLbl.text = stats.ToString();
             }
             else
             {
@@ -335,86 +338,6 @@ public class Select : MonoBehaviour
         }
     }
 
-    /*
-    private (Collider, RaycastHit) HasHitCollider()
-    {
-        Ray ray = CameraToPointRay();
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            return (hit.collider, hit);
-        }
-        return (null, default);
-    }
-
-    private void SelectEntity()
-    {
-        if (!isSelecting)
-        {
-            return;
-        }
-
-
-        (Collider collider, RaycastHit hit) = HasHitCollider();
-        MeshCollider meshCollider = (collider as MeshCollider);
-        GameObject go;
-        if (meshCollider != null && collider.CompareTag("World"))
-        {
-            Mesh mesh = meshCollider.sharedMesh;
-            //     Debug.Log("Collider found");
-            Vector3[] vertices = mesh.vertices;
-            Vector3[] normals = mesh.normals;
-
-            int triIndex = hit.triangleIndex;
-
-            int i0 = mesh.triangles[triIndex * 3 + 0];
-            int i1 = mesh.triangles[triIndex * 3 + 1];
-            int i2 = mesh.triangles[triIndex * 3 + 2];
-
-            Vector3 v0 = vertices[i0];
-            Vector3 v1 = vertices[i1];
-            Vector3 v2 = vertices[i2];
-
-            v0 = transform.TransformPoint(v0);
-            v1 = transform.TransformPoint(v1);
-            v2 = transform.TransformPoint(v2);
-
-            Vector3 pos = (v0 + v1 + v2) / 3f;
-            Debug.Log("Select");
-            go = world.GetPlacedEntity(pos);
-            if (go == null)
-            {
-                // do another check for other colliders
-                go = collider.gameObject;
-            }
-
-        }
-        else
-        {
-            go = collider.gameObject;
-        }
-
-        if (go != null)
-        {
-            popupRoot.style.display = DisplayStyle.Flex;
-            Label nameLbl = popupRoot.Q<Label>("nameLbl");
-
-            EntityStats stats = go.GetComponent<EntityStats>();
-            if (stats == null)
-            {
-                popupRoot.style.display = DisplayStyle.None;
-                return;
-            }
-            nameLbl.text = stats.ToString();
-
-
-        }
-        else
-        {
-            popupRoot.style.display = DisplayStyle.None;
-        }
-
-    }
-    */
 
     public void SetBuildOption(bool canBuild, int buildOption)
     {

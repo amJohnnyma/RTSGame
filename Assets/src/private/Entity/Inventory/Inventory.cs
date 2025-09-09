@@ -255,6 +255,18 @@ public class ItemDictionaryDrawer : PropertyDrawer
         {
             keys.arraySize++;
             values.arraySize++;
+
+            var newKey = keys.GetArrayElementAtIndex(keys.arraySize - 1);
+            var newValue = values.GetArrayElementAtIndex(values.arraySize - 1);
+
+            if (allowed != null && allowed.Count > 0)
+                newKey.objectReferenceValue = allowed[0];  // pick first allowed item
+            else
+                newKey.objectReferenceValue = null;        // fallback
+
+            newValue.intValue = 0;                         // start with zero count
+
+            property.serializedObject.ApplyModifiedProperties();
         }
     }
 }
