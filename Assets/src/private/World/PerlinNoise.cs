@@ -92,6 +92,7 @@ public class PerlinNoise
     {
         float e = Elevation(x, y, layers);
         if (e < 0f) e = 0f;
+
         return MathF.Pow(e, flatness);
     }
 }

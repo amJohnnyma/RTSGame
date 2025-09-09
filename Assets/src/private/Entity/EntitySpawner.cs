@@ -91,7 +91,7 @@ public class EntitySpawner : MonoBehaviour
                             offset = rend.bounds.extents.y;
                     }
 
-                    go.transform.position += normal * offset;
+                   // go.transform.position += normal * offset;
                 }
             }
 

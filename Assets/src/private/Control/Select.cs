@@ -285,28 +285,32 @@ public class Select : MonoBehaviour
         {
             try
             {
-                if (meshCollider != null)
-                {
-                    // Mesh-based selection (calculate triangle center)
-                    Mesh mesh = meshCollider.sharedMesh;
-                    Vector3[] vertices = mesh.vertices;
+                // First: try selection based on the hit point
+                Vector3 pos = hit.point;
+                go = world.GetPlacedEntity(pos);
 
+                // If nothing found, fall back to mesh triangle center
+                if (go == null && meshCollider != null && meshCollider.sharedMesh.isReadable)
+                {
+                    Mesh mesh = meshCollider.sharedMesh;
                     int triIndex = hit.triangleIndex;
+
                     int i0 = mesh.triangles[triIndex * 3 + 0];
                     int i1 = mesh.triangles[triIndex * 3 + 1];
                     int i2 = mesh.triangles[triIndex * 3 + 2];
+
+                    Vector3[] vertices = mesh.vertices;
 
                     Vector3 v0 = meshCollider.transform.TransformPoint(vertices[i0]);
                     Vector3 v1 = meshCollider.transform.TransformPoint(vertices[i1]);
                     Vector3 v2 = meshCollider.transform.TransformPoint(vertices[i2]);
 
-                    Vector3 pos = (v0 + v1 + v2) / 3f;
+                    pos = (v0 + v1 + v2) / 3f;
 
-                    // Check if world has a placed entity at this pos
                     go = world.GetPlacedEntity(pos);
                 }
 
-                // If no placed entity found, fall back to the hit object itself
+                // If still nothing, fallback to the collider's GameObject
                 if (go == null)
                     go = hit.collider.gameObject;
             }
@@ -337,6 +341,7 @@ public class Select : MonoBehaviour
             }
         }
     }
+
 
 
     public void SetBuildOption(bool canBuild, int buildOption)

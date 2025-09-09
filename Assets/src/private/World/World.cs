@@ -80,7 +80,7 @@ public class World : MonoBehaviour
 
             meshFilter.sharedMesh = icoSphereGen.Create(radius, subdivisions);
             terrain.Init(seed, layers, flatness, height);
-            terrain.Gen(meshFilter.sharedMesh);
+            terrain.Gen(meshFilter.sharedMesh, this.gameObject.transform);
 
             meshCollider.sharedMesh = null;
             meshCollider.sharedMesh = meshFilter.sharedMesh;
