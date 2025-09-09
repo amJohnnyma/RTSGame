@@ -7,7 +7,7 @@ public class EntitySpawner : MonoBehaviour
     public List<Entity> presets;
     public GameObject spawnContainer;
 
-    public void SpawnOnTerrain(Mesh terrainMesh, Transform terrainTransform)
+    public void SpawnOnTerrain(Mesh terrainMesh, Transform terrainTransform, World world)
     {
         Debug.Log("Spawn on terrain");
 
@@ -23,6 +23,8 @@ public class EntitySpawner : MonoBehaviour
 
         Vector3[] vertices = terrainMesh.vertices;
         Vector3[] normals = terrainMesh.normals;
+        int[] triangles = terrainMesh.triangles;
+
         float maxH = float.MinValue;
         float minH = float.MaxValue;
 
@@ -40,35 +42,46 @@ public class EntitySpawner : MonoBehaviour
         foreach (var preset in presets)
         {
 
-            for (int i = 0; i < vertices.Length; i++)
+            //iterate over tries to find idx
+            for (int tri = 0; tri < triangles.Length; tri += 3)
             {
-                // Convert to world space
-                Vector3 worldPos = terrainTransform.TransformPoint(vertices[i]);
-                Vector3 worldNormal = terrainTransform.TransformDirection(normals[i]);
+                int i0 = triangles[tri + 0];
+                int i1 = triangles[tri + 1];
+                int i2 = triangles[tri + 2];
 
-                float h = Mathf.InverseLerp(minH, maxH, worldPos.magnitude);
+                Vector3 v0 = terrainTransform.TransformPoint(vertices[i0]);
+                Vector3 v1 = terrainTransform.TransformPoint(vertices[i1]);
+                Vector3 v2 = terrainTransform.TransformPoint(vertices[i2]);
 
-                float slope = Vector3.Dot(worldNormal, worldPos.normalized);
+                Vector3 pos = (v0 + v1 + v2) / 3f;
+
+                if (world.isPlacedEntityPresent(pos)) continue;
+
+                // Interpolate normal across triangle
+                Vector3 n0 = terrainTransform.TransformDirection(normals[i0]);
+                Vector3 n1 = terrainTransform.TransformDirection(normals[i1]);
+                Vector3 n2 = terrainTransform.TransformDirection(normals[i2]);
+                Vector3 normal = (n0 + n1 + n2).normalized;
+
+                float h = Mathf.InverseLerp(minH, maxH, pos.magnitude);
+                float slope = Vector3.Dot(normal, pos.normalized);
 
                 if (h >= preset.minHeight && h <= preset.maxHeight &&
                     slope >= preset.slopeThreshold &&
                     Random.value < preset.density)
                 {
                     // Orientation aligned with surface
-                    Quaternion rot = Quaternion.FromToRotation(Vector3.up, worldNormal);
+                    Quaternion rot = Quaternion.FromToRotation(Vector3.up, normal);
 
                     // Instantiate
-                    GameObject go = Instantiate(preset.prefab, worldPos, rot, spawnContainer.transform);
+                    GameObject go = Instantiate(preset.prefab, pos, rot, spawnContainer.transform);
+                    world.AddPlacedEntity(pos, go);
 
-                    // === FLUSH PLACEMENT ===
-                    // Try to offset based on prefab bounds
-                    Collider col = go.GetComponentInChildren<Collider>();
+                    // Offset based on collider or renderer
                     float offset = 0f;
-
+                    Collider col = go.GetComponentInChildren<Collider>();
                     if (col != null)
-                    {
-                        offset = col.bounds.extents.y; // half height
-                    }
+                        offset = col.bounds.extents.y;
                     else
                     {
                         Renderer rend = go.GetComponentInChildren<Renderer>();
@@ -76,8 +89,7 @@ public class EntitySpawner : MonoBehaviour
                             offset = rend.bounds.extents.y;
                     }
 
-                    // Move slightly above the surface
-                    go.transform.position += worldNormal * offset;
+                    go.transform.position += normal * offset;
                 }
             }
 

@@ -16,10 +16,9 @@ public class Select : MonoBehaviour
     private VisualElement popupRoot;
 
 
-//temporary public
-    public bool canBuild;
-    public bool canDestroy;
-    public bool isSelecting;
+    [SerializeField] private bool canBuild;
+    [SerializeField] private bool canDestroy;
+    [SerializeField] private bool isSelecting;
     private int buildOption = -1;
 
 
