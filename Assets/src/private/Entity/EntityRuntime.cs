@@ -146,7 +146,9 @@ public class EntityRuntime : MonoBehaviour
             {
                 // Arrived home, now pick next target harvestable or wander
                 EntityStats nextHarvestable = null;
-                nextHarvestable = world.GetRandomFoundHarvestable().GetComponent<EntityStats>();
+                GameObject go = world.GetRandomFoundHarvestable();
+                if (go == null) return;
+                nextHarvestable = go.GetComponent<EntityStats>();
 
                 if (nextHarvestable != null)
                 {

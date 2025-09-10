@@ -272,7 +272,7 @@ public class Select : MonoBehaviour
 
     }
 
-
+/*
     private void SelectEntity()
     {
         if (!isSelecting)
@@ -341,7 +341,76 @@ public class Select : MonoBehaviour
             }
         }
     }
+*/
+private void SelectEntity()
+{
+    if (!isSelecting)
+        return;
 
+    // Raycast that includes triggers
+    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+    RaycastHit hit;
+    if (!Physics.Raycast(ray, out hit, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide))
+    {
+        popupRoot.style.display = DisplayStyle.None;
+        return;
+    }
+
+    GameObject go = null;
+
+    try
+    {
+        Vector3 pos = hit.point;
+
+        // Try to get placed entity from world
+        go = world.GetPlacedEntity(pos);
+
+        // Fallback: if nothing found, try mesh triangle center
+        MeshCollider meshCollider = hit.collider as MeshCollider;
+        if (go == null && meshCollider != null && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
+        {
+            int triIndex = hit.triangleIndex;
+            Mesh mesh = meshCollider.sharedMesh;
+            int[] tris = mesh.triangles;
+            Vector3[] verts = mesh.vertices;
+
+            Vector3 v0 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3]]);
+            Vector3 v1 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 1]]);
+            Vector3 v2 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 2]]);
+
+            pos = (v0 + v1 + v2) / 3f;
+
+            go = world.GetPlacedEntity(pos);
+        }
+
+        // Final fallback: use the collider itself
+        go ??= hit.collider.gameObject;
+    }
+    catch (Exception e)
+    {
+        Debug.LogError(e);
+        popupRoot.style.display = DisplayStyle.None;
+        return;
+    }
+
+    if (go == null)
+    {
+        popupRoot.style.display = DisplayStyle.None;
+        return;
+    }
+
+    // Show popup if it has EntityStats
+    EntityStats stats = go.GetComponent<EntityStats>();
+    if (stats == null)
+    {
+        popupRoot.style.display = DisplayStyle.None;
+        return;
+    }
+
+    popupRoot.style.display = DisplayStyle.Flex;
+    Label nameLbl = popupRoot.Q<Label>("nameLbl");
+    nameLbl.text = stats.ToString();
+}
 
 
     public void SetBuildOption(bool canBuild, int buildOption)
