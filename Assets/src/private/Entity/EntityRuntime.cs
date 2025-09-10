@@ -59,7 +59,7 @@ public class EntityRuntime : MonoBehaviour
                 behaviorHandler = new ScoutBehavior(world, radius);
                 break;
             case EntityBehaviour.HARVEST:
-                behaviorHandler = new HarvestBehaviour();
+                behaviorHandler = new HarvestBehaviour(world, radius / 2f);
                 break;
             default:
                 behaviorHandler = new ScoutBehavior(world);
@@ -141,10 +141,10 @@ public class EntityRuntime : MonoBehaviour
         }
         else if (behaviour == EntityBehaviour.HARVEST)
         {
+            
             if (returningHome)
             {
                 // Arrived home, now pick next target harvestable or wander
-
                 EntityStats nextHarvestable = null;
                 nextHarvestable = world.GetRandomFoundHarvestable().GetComponent<EntityStats>();
 
@@ -172,7 +172,7 @@ public class EntityRuntime : MonoBehaviour
                     Debug.Log("EMPTY");
                     world.DestroyFoundHarvestable(mainTarget.transform.position);
 
-                    
+
                 }
 
                 target = home;

@@ -129,10 +129,47 @@ public class ScoutBehavior : IEntityBehaviour
 public class HarvestBehaviour : IEntityBehaviour
 {
 
+    private World world;
+    private float visionRadius;
+
+
+
+    public HarvestBehaviour(World world, float visionRadius = 1f)
+    {
+        this.world = world;
+        this.visionRadius = visionRadius * 4;
+    }
 
 
     public void ComputeMove(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos)
     {
+
+        if (!entity.returningHome)
+        {
+            // --- Step 1: Pure data harvestable check ---
+            var harvestables = EntitySpatialUtils.GetNearbyHarvestables(world.GetUnfoundHarvestableSnapshot(), entityPos, visionRadius, world);
+            if (harvestables.Count > 0)
+            {
+                Vector3 bestHarvest = harvestables[0];
+                float bestDist = (bestHarvest - entityPos).sqrMagnitude;
+
+                for (int i = 1; i < harvestables.Count; i++)
+                {
+                    float dist = (harvestables[i] - entityPos).sqrMagnitude;
+                    if (dist < bestDist)
+                    {
+                        bestDist = dist;
+                        bestHarvest = harvestables[i];
+                    }
+                }
+
+                // Switch if closer than current target
+                if (bestDist < (targetPos - entityPos).sqrMagnitude || targetPos == Vector3.positiveInfinity)
+                {
+                    entity.pendingTargetPos = bestHarvest;
+                }
+            }
+        }
 
         // --- Step 2: Movement scoring (still parallel safe) ---
         var nearbyPoints = EntityMovementManager.GetNearbyPoints(entityPos, entity.radius, entity.checkPoints);

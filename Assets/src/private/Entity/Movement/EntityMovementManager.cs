@@ -29,7 +29,7 @@ public class EntityMovementManager : MonoBehaviour
         Parallel.For(0, entities.Length, i =>
         {
             var entity = entities[i];
-            if (entity.target == null) return;
+            if (targetPositions[i] == null) targetPositions[i] = positions[i];
 
             entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i]);
 
