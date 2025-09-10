@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: -1424713232309662261}
   m_Layer: 0
   m_Name: ScoutGhost
-  m_TagString: Untagged
+  m_TagString: EntityMoveable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -393,9 +393,9 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.145118
   m_Height: 0.73960495
@@ -464,7 +464,7 @@ MonoBehaviour:
   moveable: 0
   health: 10
   type: 0
-  eTag: EntitySelectable
+  eTag: EntityMoveable
   attacks: []
   defences: []
 --- !u!1 &498253721421649741

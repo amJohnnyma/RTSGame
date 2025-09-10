@@ -4,29 +4,36 @@ using UnityEngine;
 
 public class EntityMovementManager : MonoBehaviour
 {
-    public EntityRuntime[] entities;
+    public List<EntityRuntime> entities = new();
 
     private World world;
 
     void Start()
     {
         world = GetComponent<World>();
+        //temporary
+        GameObject[] e = GameObject.FindGameObjectsWithTag("EntityMoveable");
+        foreach (var i in e)
+        {
+            entities.Add(i.GetComponent<EntityRuntime>());
+
+        }
     }
 
     void FixedUpdate()
     {
         world.RefreshHarvestableCache();
 
-        Vector3[] positions = new Vector3[entities.Length];
-        Vector3[] targetPositions = new Vector3[entities.Length];
+        Vector3[] positions = new Vector3[entities.Count];
+        Vector3[] targetPositions = new Vector3[entities.Count];
 
-        for (int i = 0; i < entities.Length; i++)
+        for (int i = 0; i < entities.Count; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
             targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
-        Parallel.For(0, entities.Length, i =>
+        Parallel.For(0, entities.Count, i =>
         {
             var entity = entities[i];
             if (targetPositions[i] == null) targetPositions[i] = positions[i];

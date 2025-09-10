@@ -103,7 +103,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -143,18 +143,21 @@ MonoBehaviour:
   home: {fileID: 0}
   mainTarget: {fileID: 0}
   worldCollider: {fileID: 0}
+  world: {fileID: 0}
   returningHome: 1
   moveSpeed: 5
   turnSpeed: 5
   surfaceOffset: 1
   raycastDownDist: 5
   stopFollowDist: 2
+  behaviour: 0
   radius: 5
   checkPoints: 128
   rb: {fileID: 0}
   nextMoveDir: {x: 0, y: 0, z: 0}
   lastNearbyPoints: []
   chosenScore: 0
+  pendingTargetPos: {x: Infinity, y: Infinity, z: Infinity}
 --- !u!114 &-1424713232309662261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,7 +173,7 @@ MonoBehaviour:
   entityName: Ghost_Transport
   moveable: 0
   health: 10
-  type: NoType
+  type: 0
   eTag: EntitySelectable
   attacks: []
   defences: []
