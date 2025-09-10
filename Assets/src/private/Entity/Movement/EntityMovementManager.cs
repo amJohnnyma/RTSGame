@@ -38,16 +38,29 @@ public class EntityMovementManager : MonoBehaviour
         // --- Phase 2: Main thread - raycast to terrain and move Rigidbody ---
         foreach (var entity in entities)
         {
-            if (entity.target == null || entity.rb == null) continue;
+            if (entity.rb == null) continue;
+
+            if (entity.target == null)
+            {
+                entity.target = entity.home;
+                entity.rb.velocity = Vector3.zero;
+                continue;
+            }
+            if (entity.mainTarget == null)
+            {
+                entity.mainTarget = entity.home;
+                entity.rb.velocity = Vector3.zero;
+                continue;
+            }
 
             if (entity.pendingTargetPos != Vector3.positiveInfinity)
-            {
-                if (world.placedEntities.TryGetValue(entity.pendingTargetPos, out var go))
                 {
-                    entity.target = go.transform;
+                    if (world.placedEntities.TryGetValue(entity.pendingTargetPos, out var go))
+                    {
+                        entity.target = go.transform;
+                    }
+                    entity.pendingTargetPos = Vector3.positiveInfinity; // reset
                 }
-                entity.pendingTargetPos = Vector3.positiveInfinity; // reset
-            }
 
             if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)
             {
