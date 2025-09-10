@@ -141,7 +141,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allowedItems:
   - {fileID: 11400000, guid: 7b7184b358248d0d78b58e894a75c116, type: 2}
+  - {fileID: 11400000, guid: 40346f3d14be5e7f68cb085c1bf86855, type: 2}
   itemStorage:
     keys:
+    - {fileID: 11400000, guid: 40346f3d14be5e7f68cb085c1bf86855, type: 2}
     - {fileID: 11400000, guid: 7b7184b358248d0d78b58e894a75c116, type: 2}
-    values: 0a000000
+    values: 0500000005000000

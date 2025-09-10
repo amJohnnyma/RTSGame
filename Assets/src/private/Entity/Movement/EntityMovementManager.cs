@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -5,8 +6,16 @@ public class EntityMovementManager : MonoBehaviour
 {
     public EntityRuntime[] entities;
 
+    private World world;
+
+    void Start()
+    {
+        world = GetComponent<World>();
+    }
+
     void FixedUpdate()
     {
+        world.RefreshHarvestableCache();
 
         Vector3[] positions = new Vector3[entities.Length];
         Vector3[] targetPositions = new Vector3[entities.Length];
@@ -14,7 +23,7 @@ public class EntityMovementManager : MonoBehaviour
         for (int i = 0; i < entities.Length; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
-            targetPositions[i] = entities[i].target.transform.position;   // main thread copy
+            targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Length, i =>
@@ -22,25 +31,7 @@ public class EntityMovementManager : MonoBehaviour
             var entity = entities[i];
             if (entity.target == null) return;
 
-            // Sample nearby points
-            var nearbyPoints = GetNearbyPoints(positions[i], entity.radius, entity.checkPoints);
-            entity.lastNearbyPoints = nearbyPoints;
-
-            // Score points toward target
-            
-            float bestScore = float.MinValue;
-            int bestIdx = 0;
-            for (int j = 0; j < nearbyPoints.Length; j++)
-            {
-                float score = 1f / ((nearbyPoints[j] - targetPositions[i]).sqrMagnitude+ 0.001f);
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestIdx = j;
-                }
-            }
-
-            entity.chosenScore = bestIdx;
+            entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i]);
 
         });
 
@@ -48,6 +39,15 @@ public class EntityMovementManager : MonoBehaviour
         foreach (var entity in entities)
         {
             if (entity.target == null || entity.rb == null) continue;
+
+            if (entity.pendingTargetPos != Vector3.positiveInfinity)
+            {
+                if (world.placedEntities.TryGetValue(entity.pendingTargetPos, out var go))
+                {
+                    entity.target = go.transform;
+                }
+                entity.pendingTargetPos = Vector3.positiveInfinity; // reset
+            }
 
             if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)
             {
@@ -101,7 +101,7 @@ public class EntityMovementManager : MonoBehaviour
     }
 
     // --- Utility: Fibonacci sphere sampling ---
-        private Vector3[] GetNearbyPoints(Vector3 pos, float radius, int samples)
+        public static Vector3[] GetNearbyPoints(Vector3 pos, float radius, int samples)
         {
             Vector3[] points = new Vector3[samples];
             float phi = Mathf.PI * (3f - Mathf.Sqrt(5f));
@@ -119,5 +119,41 @@ public class EntityMovementManager : MonoBehaviour
             return points;
         }
 
+
+}
+
+public static class EntitySpatialUtils
+{
+    // Thread-safe: return nearby **positions only**
+    public static List<Vector3> GetNearbyEntities(Vector3 self, float radius, Vector3[] allPositions)
+    {
+        List<Vector3> nearby = new List<Vector3>();
+        float r2 = radius * radius;
+
+        foreach (var pos in allPositions)
+        {
+            if (pos == self) continue;
+            if ((pos - self).sqrMagnitude <= r2)
+                nearby.Add(pos);
+        }
+        return nearby;
+    }
+
+    // Thread-safe harvestable detection using positions
+    public static List<Vector3> GetNearbyHarvestables(IReadOnlyList<Vector3> harvestablePositions, Vector3 pos, float radius, World world)
+    {
+        List<Vector3> nearby = new List<Vector3>();
+        float r2 = radius * radius;
+
+        for (int i = 0; i < harvestablePositions.Count; i++)
+        {
+            var entityPos = harvestablePositions[i];
+            if (world.GetFoundHarvestable(entityPos)) continue;
+            if ((entityPos - pos).sqrMagnitude <= r2)
+                nearby.Add(entityPos);
+        }
+
+        return nearby;
+    }
 
 }

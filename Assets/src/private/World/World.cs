@@ -43,6 +43,8 @@ public class World : MonoBehaviour
     {
         CreateIcosphere();
         spawner.SpawnOnTerrain(meshFilter.sharedMesh, this.gameObject.transform, this);
+        //Track all spawned harvestables
+
     }
 
 
@@ -140,6 +142,7 @@ public class World : MonoBehaviour
 
         foreach (var kvp in placedEntities)
         {
+            if (kvp.Value == null) continue;
             var stats = kvp.Value.GetComponent<EntityStats>();
             if (stats != null && stats.type == Type.HARVESTABLE)
             {
@@ -153,6 +156,40 @@ public class World : MonoBehaviour
         return selected; // null if no harvestables exist
     }
 
+    public GameObject GetRandomUnfoundPlacedHarvestable()
+    {
+        GameObject selected = null;
+        int count = 0;
+
+        foreach (var kvp in placedEntities)
+        {
+            var stats = kvp.Value.GetComponent<EntityStats>();
+            if (stats != null && stats.type == Type.HARVESTABLE)
+            {
+                // Only consider harvestables not yet found
+                if (GetFoundHarvestable(kvp.Key) == null)
+                {
+                    count++;
+                    if (Random.Range(0, count) == 0) // reservoir sampling
+                        selected = kvp.Value;
+                }
+            }
+        }
+
+        return selected; // null if none exist
+    }
+
+    public GameObject GetRandomFoundHarvestable()
+    {
+
+        if (foundHarvestables.Count <= 0) return null;
+        var vals = foundHarvestables.Values.ToList();
+
+        int randomIndex = Random.Range(0, vals.Count);
+
+        return vals[randomIndex];
+    }
+
 
 
 
@@ -164,16 +201,23 @@ public class World : MonoBehaviour
 
     public void AddFoundHarvestable(Vector3 key, GameObject go)
     {
-        foundHarvestables[key] = go;
-        Debug.Log("Harvestable added at " + key.ToString());
+        if (!foundHarvestables.ContainsKey(key))
+        {
+            foundHarvestables[key] = go;
+            Debug.Log("Harvestable added at " + key.ToString());
+
+        }
+
     }
 
     public void DestroyFoundHarvestable(Vector3 key)
     {
         if (foundHarvestables.ContainsKey(key))
         {
-            Destroy(foundHarvestables[key]);
+            GameObject go = foundHarvestables[key];
             foundHarvestables.Remove(key);
+            placedEntities.Remove(key);
+            Destroy(go);
             Debug.Log("Harvestable destroyed at " + key.ToString());
         }
     }
@@ -191,5 +235,33 @@ public class World : MonoBehaviour
     {
         return foundHarvestables.ContainsKey(key);
     }
+
+
+
+    // snapshots
+    private List<Vector3> unfoundHarvestablePositions = new List<Vector3>();
+
+    public void RefreshHarvestableCache()
+    {
+        unfoundHarvestablePositions.Clear();
+
+        foreach (var kvp in placedEntities)
+        {
+            if (kvp.Value == null) return;
+            var stats = kvp.Value.GetComponent<EntityStats>();
+            if (stats != null && stats.type == Type.HARVESTABLE && !IsFoundHarvestablePresent(kvp.Key))
+            {
+                unfoundHarvestablePositions.Add(kvp.Key);
+            }
+        }
+    }
+
+    public IReadOnlyList<Vector3> GetUnfoundHarvestableSnapshot()
+    {
+        return unfoundHarvestablePositions;
+    }
+
+    
+    
 
 }

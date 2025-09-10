@@ -121,6 +121,16 @@ public abstract class Inventory : MonoBehaviour
     public int GetCount(ItemSO item) =>
         Items.TryGetValue(item, out int count) ? count : 0;
 
+    public int GetCount(string name)
+    {
+        return GetCount(GetItemSO(name));
+    }
+
+    public bool IsEmpty(string name)
+    {
+        return GetCount(name) <= 0;
+    }
+
     public IReadOnlyDictionary<ItemSO, int> GetAllItems() => Items;
 
     public void GiveItemToOther(string itemName, int amount, Inventory other)
