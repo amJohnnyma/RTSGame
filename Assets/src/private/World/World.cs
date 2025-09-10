@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using UnityEditor.Il2Cpp;
 using UnityEngine;
@@ -28,7 +29,8 @@ public class World : MonoBehaviour
     private IcosphereGenerator icoSphereGen = new IcosphereGenerator();
     private IcosphereTerrain terrain;
 
-    private Dictionary<Vector3, GameObject> placedEntities = new Dictionary<Vector3, GameObject>();
+    public Dictionary<Vector3, GameObject> placedEntities = new Dictionary<Vector3, GameObject>();
+    public Dictionary<Vector3, GameObject> foundHarvestables = new Dictionary<Vector3, GameObject>();
 
 
     private void OnValidate()
@@ -118,9 +120,76 @@ public class World : MonoBehaviour
         }
         return null;
     }
+    public GameObject GetRandomPlacedEntity()
+    {
+
+        // Convert dictionary keys/values to a list
+        var values = placedEntities.Values.ToList();
+
+        // Pick a random index
+        int randomIndex = Random.Range(0, values.Count);
+
+        return values[randomIndex];
+    }
+
+
+    public GameObject GetRandomPlacedHarvestable()
+    {
+        GameObject selected = null;
+        int count = 0;
+
+        foreach (var kvp in placedEntities)
+        {
+            var stats = kvp.Value.GetComponent<EntityStats>();
+            if (stats != null && stats.type == Type.HARVESTABLE)
+            {
+                count++;
+                // Reservoir sampling: each item has 1/count chance to be picked
+                if (Random.Range(0, count) == 0)
+                    selected = kvp.Value;
+            }
+        }
+
+        return selected; // null if no harvestables exist
+    }
+
+
+
+
 
     public bool isPlacedEntityPresent(Vector3 key)
     {
         return placedEntities.ContainsKey(key);
     }
+
+    public void AddFoundHarvestable(Vector3 key, GameObject go)
+    {
+        foundHarvestables[key] = go;
+        Debug.Log("Harvestable added at " + key.ToString());
+    }
+
+    public void DestroyFoundHarvestable(Vector3 key)
+    {
+        if (foundHarvestables.ContainsKey(key))
+        {
+            Destroy(foundHarvestables[key]);
+            foundHarvestables.Remove(key);
+            Debug.Log("Harvestable destroyed at " + key.ToString());
+        }
+    }
+
+    public GameObject GetFoundHarvestable(Vector3 key)
+    {
+        if (IsFoundHarvestablePresent(key))
+        {
+            return foundHarvestables[key];
+        }
+        return null;
+    }
+
+    public bool IsFoundHarvestablePresent(Vector3 key)
+    {
+        return foundHarvestables.ContainsKey(key);
+    }
+
 }

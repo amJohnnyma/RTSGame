@@ -1,5 +1,16 @@
 using UnityEngine;
 
+public enum EntityBehaviour
+{
+    DEFAULT,
+    WANDER,
+    SCOUT,
+    ATTACK,
+    HARVEST,
+    TRANSPORT,
+    DEFEND
+}
+
 [RequireComponent(typeof(Rigidbody))]
 public class EntityRuntime : MonoBehaviour
 {
@@ -8,6 +19,7 @@ public class EntityRuntime : MonoBehaviour
     public Transform home;
     public Transform mainTarget;
     public Collider worldCollider;
+    public World world;
 
     public bool returningHome = true;
 
@@ -18,6 +30,8 @@ public class EntityRuntime : MonoBehaviour
     public float surfaceOffset = 0.1f;
     public float raycastDownDist = 5f;
     public float stopFollowDist = 0.1f;
+    [SerializeField]
+    public EntityBehaviour behaviour = EntityBehaviour.DEFAULT; 
 
     [Header("Nearby Point Detection")]
     public float radius = 5f;
@@ -29,6 +43,7 @@ public class EntityRuntime : MonoBehaviour
     [HideInInspector] public Vector3 nextMoveDir;
     [HideInInspector] public Vector3[] lastNearbyPoints;
     [HideInInspector] public int chosenScore;
+    [HideInInspector] public IEntityBehaviour behaviorHandler;
 
     void Awake()
     {
@@ -36,6 +51,25 @@ public class EntityRuntime : MonoBehaviour
         rb.useGravity = false;
 
         target = (target == null) ? home : target;
+
+        switch (behaviour)
+        {
+            case EntityBehaviour.SCOUT:
+                behaviorHandler = new ScoutBehavior(world, radius);
+                break;
+            default:
+                behaviorHandler = new ScoutBehavior(world);
+                break;
+        }
+
+
+
+    }
+
+    void Start()
+    {
+        mainTarget = world.GetRandomPlacedEntity().transform;
+
     }
 
     private void OnDrawGizmos()
@@ -64,25 +98,56 @@ public class EntityRuntime : MonoBehaviour
     }
 
     public void SetTargetToggle()
+{
+    // If mainTarget is null, pick a random entity in the world
+    if (mainTarget == null)
     {
-        //this will be replaced with whatever the purpose is of the Entity (fetch, retrieve, etc etc)
-        if (target == mainTarget)
-        {
-            mainTarget.gameObject.GetComponent<Inventory>().GiveItemToOther("Red_Flower", 1, this.GetComponent<Inventory>());
-        }
-        else if (target == home)
-        {
-            this.GetComponent<Inventory>().GiveItemToOther("Red_Flower", int.MaxValue, home.gameObject.GetComponent<Inventory>());
+        var randomEntity = world.GetRandomPlacedEntity();
+        if (randomEntity != null)
+            mainTarget = randomEntity.transform;
+    }
 
+    // Scout logic
+    if (behaviour == EntityBehaviour.SCOUT)
+    {
+        if (returningHome)
+        {
+            // Arrived home, now pick next target harvestable or wander
+            EntityStats nextHarvestable = world.GetRandomPlacedHarvestable().GetComponent<EntityStats>();
+            if (nextHarvestable != null)
+            {
+                mainTarget = nextHarvestable.transform;
+                target = mainTarget;
+                returningHome = false;
+            }
+            else
+            {
+                // No harvestables, pick random wander point
+                target = mainTarget; // default to mainTarget for wandering
+                returningHome = false;
+            }
         }
         else
         {
-            Debug.Log("Error inv trans");
-
+            // Arrived at target (harvestable), go home next
+            target = home;
+            returningHome = true;
         }
-        target = (!returningHome) ? home : mainTarget;
-
-        returningHome = !returningHome;
-
     }
+    else
+    {
+        // Default behavior for other entities
+        if (returningHome)
+        {
+            target = mainTarget;
+            returningHome = false;
+        }
+        else
+        {
+            target = home;
+            returningHome = true;
+        }
+    }
+}
+
 }

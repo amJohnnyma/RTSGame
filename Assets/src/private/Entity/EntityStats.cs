@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Type
+{
+    NONE,
+    BUILDING,
+    HARVESTABLE
+}
+
 [System.Serializable]
 public struct TeamData //this doesnt seem too efficient. -> Finding alliances is a for loop. Maybe a B tree? Something scalable and easy to loop through. Undirected graph?
 {
@@ -74,7 +81,7 @@ public class EntityStats : MonoBehaviour
     public int moveable = 0; // incase i want different moveable types
     public float health = 10; // entity hit points
 
-    public string type = "NoType"; // building, creature, etc.
+    public Type type = Type.NONE; // building, creature, etc.
     public string eTag = "EntitySelectable";
 
     public TeamData teamData; //teams name, alliances
