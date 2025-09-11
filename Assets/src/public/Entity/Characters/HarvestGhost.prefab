@@ -214,7 +214,7 @@ MonoBehaviour:
   turnSpeed: 5
   surfaceOffset: 1
   raycastDownDist: 5
-  stopFollowDist: 2
+  stopFollowDist: 3
   behaviour: 4
   radius: 5
   checkPoints: 128

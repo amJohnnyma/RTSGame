@@ -153,6 +153,11 @@ public abstract class Inventory : MonoBehaviour
         other.AddItem(item, transferAmount);
     }
 
+    public void AddAllowedItem(ItemSO item)
+    {
+        if (!allowedItems.Contains(item)) allowedItems.Add(item);
+    }
+
     public ItemSO GetItemSO(string name)
     {
         for (int i = 0; i < allowedItems.Count; i++)
