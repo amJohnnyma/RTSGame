@@ -18,7 +18,20 @@ public class EntitySpawner : MonoBehaviour
 
         for (int i = spawnContainer.transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(spawnContainer.transform.GetChild(i).gameObject);
+            Type type = spawnContainer.transform.GetChild(i).GetComponent<EntityStats>().type;
+            if (type != Type.BUILDING)
+            {
+                Destroy(spawnContainer.transform.GetChild(i).gameObject);
+
+            }
+            else if (type == Type.BUILDING)
+            {
+                world.AddPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position, spawnContainer.transform.GetChild(i).gameObject);
+                Debug.Log("Added building");
+                Debug.Log(world.GetPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position).GetComponent<EntityStats>().ToString());
+
+            }
+            else { }
         }
 
         Vector3[] vertices = terrainMesh.vertices;

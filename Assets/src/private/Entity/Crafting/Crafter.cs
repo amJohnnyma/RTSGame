@@ -15,7 +15,8 @@ public class Crafter : MonoBehaviour
 
     void FixedUpdate()
     {
-        CraftItem(craft);
+        if(craft != null)
+            CraftItem(craft);
     }
 
     public void CraftItem(ItemSO craft)

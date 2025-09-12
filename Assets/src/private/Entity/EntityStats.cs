@@ -109,6 +109,58 @@ public class EntityStats : MonoBehaviour
                $"  Attacks:\n    {atkStr}\n" +
                $"  Defences:\n    {defStr}";
     }
+
+    public void SnapToTriangle(string meshFilterName = "Icosphere")
+    { 
+            // Find MeshFilter by name in the scene
+        MeshFilter terrainMeshFilter = GameObject.Find(meshFilterName)?.GetComponent<MeshFilter>();
+        if (terrainMeshFilter == null)
+        {
+            Debug.LogError($"MeshFilter named {meshFilterName} not found in scene!");
+            return;
+        }
+
+        Transform terrainTransform = terrainMeshFilter.transform.parent != null 
+            ? terrainMeshFilter.transform.parent 
+            : terrainMeshFilter.transform;
+
+        Mesh mesh = terrainMeshFilter.sharedMesh;
+        int[] triangles = mesh.triangles;
+        Vector3[] vertices = mesh.vertices;
+        Vector3[] normals = mesh.normals;
+
+        // Find nearest triangle center
+        float closestDist = float.MaxValue;
+        Vector3 bestPos = transform.position;
+        Vector3 bestNormal = Vector3.up;
+
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            Vector3 v0 = terrainTransform.TransformPoint(vertices[triangles[i]]);
+            Vector3 v1 = terrainTransform.TransformPoint(vertices[triangles[i + 1]]);
+            Vector3 v2 = terrainTransform.TransformPoint(vertices[triangles[i + 2]]);
+
+            Vector3 center = (v0 + v1 + v2) / 3f;
+
+            float dist = Vector3.Distance(transform.position, center);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                bestPos = center;
+
+                Vector3 n0 = terrainTransform.TransformDirection(normals[triangles[i]]);
+                Vector3 n1 = terrainTransform.TransformDirection(normals[triangles[i + 1]]);
+                Vector3 n2 = terrainTransform.TransformDirection(normals[triangles[i + 2]]);
+                bestNormal = (n0 + n1 + n2).normalized;
+            }
+        }
+
+        // Snap
+        transform.position = bestPos;
+        transform.rotation = Quaternion.FromToRotation(Vector3.up, bestNormal);
+  
+
+    }
    
 
 }

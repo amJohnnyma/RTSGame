@@ -42,6 +42,8 @@ public class World : MonoBehaviour
     private void Start()
     {
         CreateIcosphere();
+
+        //also adds preplaced buildings
         spawner.SpawnOnTerrain(meshFilter.sharedMesh, this.gameObject.transform, this);
         //Track all spawned harvestables
 
@@ -105,7 +107,7 @@ public class World : MonoBehaviour
     public void AddPlacedEntity(Vector3 key, GameObject go)
     {
         placedEntities[key] = go;
-        Debug.Log("Added at " + key.ToString());
+     //   Debug.Log("Added at " + key.ToString());
     }
     public void DestroyPlacedEntity(Vector3 key)
     {

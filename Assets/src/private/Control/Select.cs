@@ -364,9 +364,13 @@ private void SelectEntity()
 
         // Try to get placed entity from world
         go = world.GetPlacedEntity(pos);
+        if (go != null)
+        {
+            Debug.Log("Found at " + pos.ToString());
+        }
 
         // Fallback: if nothing found, try mesh triangle center
-        MeshCollider meshCollider = hit.collider as MeshCollider;
+                MeshCollider meshCollider = hit.collider as MeshCollider;
         if (go == null && meshCollider != null && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
         {
             int triIndex = hit.triangleIndex;
