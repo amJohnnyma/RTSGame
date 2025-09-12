@@ -111,8 +111,9 @@ public class EntityStats : MonoBehaviour
     }
 
     public void SnapToTriangle(string meshFilterName = "Icosphere")
-    { 
-            // Find MeshFilter by name in the scene
+    {
+        if (type != Type.BUILDING) return;
+        // Find MeshFilter by name in the scene
         MeshFilter terrainMeshFilter = GameObject.Find(meshFilterName)?.GetComponent<MeshFilter>();
         if (terrainMeshFilter == null)
         {
