@@ -6,7 +6,8 @@ public enum Type
 {
     NONE,
     BUILDING,
-    HARVESTABLE
+    HARVESTABLE,
+    ENTITY
 }
 
 [System.Serializable]
@@ -43,6 +44,7 @@ public struct Attack // what type of attack does it do
         string pos = attackPos != null ? attackPos.name : "None";
         return $"Attack(Type={type}, Damage={damage}, Range={attackRange}, Angle={attackAngle}, Pos={pos}, {damageType})";
     }
+    
     
 }
 

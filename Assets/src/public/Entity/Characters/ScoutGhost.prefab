@@ -440,7 +440,7 @@ MonoBehaviour:
   surfaceOffset: 1
   raycastDownDist: 5
   stopFollowDist: 3
-  behaviour: 0
+  behaviour: 2
   radius: 5
   checkPoints: 128
   rb: {fileID: 0}
@@ -463,7 +463,7 @@ MonoBehaviour:
   entityName: Ghost_Scout
   moveable: 0
   health: 10
-  type: 0
+  type: 3
   eTag: EntityMoveable
   attacks: []
   defences: []

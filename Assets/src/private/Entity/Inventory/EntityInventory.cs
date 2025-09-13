@@ -7,6 +7,11 @@ public class EntityInventory : Inventory
 
     override public void OnInventoryChanged()
     {
+        totalItemCount = 0;
+        foreach (var (k, v) in Items)
+        {
+            totalItemCount += v;
+        }
 
     }
 

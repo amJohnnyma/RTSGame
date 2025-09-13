@@ -238,7 +238,7 @@ MonoBehaviour:
   entityName: Ghost_Harvest
   moveable: 0
   health: 10
-  type: 0
+  type: 3
   eTag: EntityMoveable
   attacks: []
   defences: []

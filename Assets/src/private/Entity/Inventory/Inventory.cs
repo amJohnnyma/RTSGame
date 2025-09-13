@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 [Serializable]
 public class ItemStack
@@ -80,7 +81,10 @@ public abstract class Inventory : MonoBehaviour
 
     [SerializeField] private SerializableDictionary<ItemSO, int> itemStorage = new SerializableDictionary<ItemSO, int>();
 
-    private Dictionary<ItemSO, int> Items => itemStorage.Dictionary;
+    protected Dictionary<ItemSO, int> Items => itemStorage.Dictionary;
+
+    // for other checks if entity is looking in
+    protected int totalItemCount = 0;
 
     public void AddItem(ItemSO item, int count = 1)
     {
@@ -116,6 +120,11 @@ public abstract class Inventory : MonoBehaviour
 
         OnInventoryChanged();
         return true;
+    }
+
+    public int GetTotalCount()
+    {
+        return totalItemCount;
     }
 
     public int GetCount(ItemSO item) =>
@@ -166,6 +175,23 @@ public abstract class Inventory : MonoBehaviour
                 return allowedItems[i];
         }
         return null;
+    }
+
+    public ItemSO GetRandomItem()
+    {
+        // Convert dictionary keys/values to a list
+        var values = Items.Keys.ToList();
+
+        // Pick a random index
+        int randomIndex = UnityEngine.Random.Range(0, values.Count);
+
+        return values[randomIndex];
+
+    }
+
+    public ItemSO GetFirstItem()
+    {
+        return Items.Keys.ToList()[0] == null ? null : Items.Keys.ToList()[0];
     }
 
     public abstract void OnInventoryChanged();
