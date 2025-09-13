@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class ConveyorBelt : MonoBehaviour
@@ -41,7 +42,7 @@ public class ConveyorBelt : MonoBehaviour
         if (canTakeMore)
         {
             Debug.Log("Can take more irtems");
-            itemsOnBelt.Add(item);
+            AddToBelt(item);
             inventory.RemoveItem(item);
         }
         else
@@ -54,11 +55,12 @@ public class ConveyorBelt : MonoBehaviour
     public void GiveItemTo(Inventory inventory)
     {
         Debug.Log("giving to inv");
-        if (canGive)
+        if (canGive && itemsOnBelt.Count > 0)
         {
             Debug.Log("Giving items");
             ItemSO i = itemsOnBelt[0];
-            itemsOnBelt.RemoveAt(0);
+            if (inventory.GetCount(i) >= i.maxStack) return;
+            RemoveFromBelt();
             inventory.AddItem(i);
         }
 
@@ -95,7 +97,7 @@ public class ConveyorBelt : MonoBehaviour
         {
             Debug.Log("Move to next belt");
             nextBelt.AddToBelt(item);
-            itemsOnBelt.RemoveAt(0);
+            RemoveFromBelt();
 
         }
 
@@ -103,13 +105,32 @@ public class ConveyorBelt : MonoBehaviour
 
     public void AddToBelt(ItemSO item)
     {
+        StartCoroutine(AddToBeltWithDelay(item));
+    }
+
+    private IEnumerator AddToBeltWithDelay(ItemSO item)
+    {
+        yield return new WaitForSeconds(0.2f); // 200ms
         itemsOnBelt.Add(item);
     }
+
+    public void RemoveFromBelt()
+    {
+        StartCoroutine(RemoveFromBeltWithDelay());
+    }
+
+    private IEnumerator RemoveFromBeltWithDelay()
+    {
+        yield return new WaitForSeconds(0.2f); // 200ms
+        if (itemsOnBelt.Count > 0)
+            itemsOnBelt.RemoveAt(0);
+    }
+
 
 
     private void UpdateVars()
     {
-        canGive = itemsOnBelt.Count > 0 ? true : false;
-        canTakeMore = itemsOnBelt.Count < 3 ? true : false;
+        canGive = itemsOnBelt.Count > 0;
+        canTakeMore = itemsOnBelt.Count < 3;
     }
 }

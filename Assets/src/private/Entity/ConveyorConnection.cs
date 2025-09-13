@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class ConveyorConnection : MonoBehaviour
@@ -27,44 +28,78 @@ public class ConveyorConnection : MonoBehaviour
         lr.SetPosition(0, this.transform.position);
         lr.SetPosition(1, belt.transform.position);
 
+        if (belt != null)
+            StartCoroutine(RunConveyor()); // start once
+
     }
 
+    private IEnumerator RunConveyor()
+    {
+        while (true) // keep running
+        {
+            if (belt == null)
+            {
+                Debug.Log("Null belt");
+                yield break; // stop forever
+            }
+
+            if (isReceiver)
+            {
+                Debug.Log("Receiver");
+                belt.GiveItemTo(inventory);
+            }
+            else
+            {
+                if (HasItem() && belt.CanTakeMore())
+                {
+                    ItemSO item = GetItem();
+                    if (item != null)
+                        belt.TakeItemFrom(item, inventory);
+                }
+            }
+
+            // wait 200ms before trying again
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
     // ** NBNBNBNBNBNNBNBNBNBNB
     // ConveyerConnection must be on a child such that there can be a input and output 
     // this can be made into a red/blue cube prefab for now
 
-    void FixedUpdate()
-    {
-        if (belt == null)
+    /*
+        void FixedUpdate()
         {
-            Debug.Log("Null belt");
-            return;
-        }
-
-
-        if (isReceiver)
-        {
-            Debug.Log("Reciever");
-            belt.GiveItemTo(inventory);
-
-        }
-        else
-        {
-            if (HasItem() && belt.CanTakeMore())
+            if (belt == null)
             {
-                ItemSO item = GetItem();
-                if (item == null) return;
-                belt.TakeItemFrom(item, inventory);
+                Debug.Log("Null belt");
+                return;
+            }
+
+
+            if (isReceiver)
+            {
+                Debug.Log("Reciever");
+                belt.GiveItemTo(inventory);
 
             }
-        }
+            else
+            {
+                if (HasItem() && belt.CanTakeMore())
+                {
+                    ItemSO item = GetItem();
+                    if (item == null) return;
+                    belt.TakeItemFrom(item, inventory);
 
-    }
+                }
+            }
+
+        }
+        */
 
     private bool HasItem()
     {
         if (inventory.GetTotalCount() > 0)
-                return true;
+            return true;
 
         return false;
     }
