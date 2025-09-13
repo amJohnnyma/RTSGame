@@ -12,7 +12,7 @@ public class PlacedEntityAlignment : Editor
 
         EntityStats entity = (EntityStats)target;
 
-        if (GUILayout.Button("Snap to triangle center")) ;
+        if (GUILayout.Button("Snap to triangle center"))
         {
             entity.SnapToTriangle();   
         }

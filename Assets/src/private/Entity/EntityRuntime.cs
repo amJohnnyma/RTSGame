@@ -169,7 +169,12 @@ public class EntityRuntime : MonoBehaviour
             {
                 // Arrived at target (harvestable), go home next
                 // just double check we arent taking things from base
-                if (mainTarget == home) return;
+                if (mainTarget == home)
+                {
+                    target = home;
+                    returningHome = true;
+                    return;
+                }
                 mainTarget.gameObject.GetComponent<Inventory>().GiveItemToOther("Red_Flower", 1, this.GetComponent<Inventory>());
                 if (mainTarget.GetComponent<EntityInventory>().IsEmpty("Red_Flower"))
                 {
