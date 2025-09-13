@@ -66,35 +66,6 @@ public class ConveyorConnection : MonoBehaviour
     // ConveyerConnection must be on a child such that there can be a input and output 
     // this can be made into a red/blue cube prefab for now
 
-    /*
-        void FixedUpdate()
-        {
-            if (belt == null)
-            {
-                Debug.Log("Null belt");
-                return;
-            }
-
-
-            if (isReceiver)
-            {
-                Debug.Log("Reciever");
-                belt.GiveItemTo(inventory);
-
-            }
-            else
-            {
-                if (HasItem() && belt.CanTakeMore())
-                {
-                    ItemSO item = GetItem();
-                    if (item == null) return;
-                    belt.TakeItemFrom(item, inventory);
-
-                }
-            }
-
-        }
-        */
 
     private bool HasItem()
     {

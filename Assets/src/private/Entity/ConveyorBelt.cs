@@ -7,6 +7,7 @@ public class ConveyorBelt : MonoBehaviour
 {
     private bool canTakeMore = true;
     private bool canGive = false;
+    private bool isTransferring = false;
 
     public List<ItemSO> itemsOnBelt = new();
     public ConveyorBelt nextBelt;
@@ -105,13 +106,18 @@ public class ConveyorBelt : MonoBehaviour
 
     public void AddToBelt(ItemSO item)
     {
-        StartCoroutine(AddToBeltWithDelay(item));
+        if(!isTransferring)
+            StartCoroutine(AddToBeltWithDelay(item));
     }
 
     private IEnumerator AddToBeltWithDelay(ItemSO item)
     {
+        isTransferring = true;
         yield return new WaitForSeconds(0.2f); // 200ms
-        itemsOnBelt.Add(item);
+        if (itemsOnBelt.Count < 3)
+            itemsOnBelt.Add(item);
+
+        isTransferring = false;
     }
 
     public void RemoveFromBelt()
@@ -121,9 +127,11 @@ public class ConveyorBelt : MonoBehaviour
 
     private IEnumerator RemoveFromBeltWithDelay()
     {
+        isTransferring = true;
         yield return new WaitForSeconds(0.2f); // 200ms
         if (itemsOnBelt.Count > 0)
             itemsOnBelt.RemoveAt(0);
+        isTransferring = false;
     }
 
 
