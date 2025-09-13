@@ -6,34 +6,57 @@ public class ConveyorConnection : MonoBehaviour
 {
     [Tooltip("T/F for is receiver")]
     [SerializeField] private bool isReceiver;
+    [SerializeField] private ItemSO craftedOut;
     private Inventory inventory;
-    private ConveyorBelt belt;
+    // public temp for now
+    public ConveyorBelt belt;
+    // temporary connection drawing
+    public LineRenderer lr;
 
     void Start()
     {
-        inventory = GetComponent<Inventory>();
+        inventory = GetComponentInParent<Inventory>();
         if (inventory == null)
         {
             Debug.Log("Inventory null");
             this.enabled = false;
+            return;
         }
+        if (belt == null) return;
+        lr.positionCount = 2;
+        lr.SetPosition(0, this.transform.position);
+        lr.SetPosition(1, belt.transform.position);
+
     }
+
+    // ** NBNBNBNBNBNNBNBNBNBNB
+    // ConveyerConnection must be on a child such that there can be a input and output 
+    // this can be made into a red/blue cube prefab for now
 
     void FixedUpdate()
     {
-        if (HasItem() && belt.CanTakeMore())
+        if (belt == null)
         {
-            ItemSO item = GetItem();
-            if (!isReceiver)
-            {
-                belt.GiveItemTo(item, inventory);
+            Debug.Log("Null belt");
+            return;
+        }
 
-            }
-            else
+
+        if (isReceiver)
+        {
+            Debug.Log("Reciever");
+            belt.GiveItemTo(inventory);
+
+        }
+        else
+        {
+            if (HasItem() && belt.CanTakeMore())
             {
+                ItemSO item = GetItem();
+                if (item == null) return;
                 belt.TakeItemFrom(item, inventory);
-            }
 
+            }
         }
 
     }
@@ -41,14 +64,19 @@ public class ConveyorConnection : MonoBehaviour
     private bool HasItem()
     {
         if (inventory.GetTotalCount() > 0)
-            return true;
+                return true;
 
         return false;
     }
 
     private ItemSO GetItem()
     {
-        return inventory.GetFirstItem();
+        if (craftedOut == null)
+        {
+            return inventory.GetFirstItem();
+        }
+        if (inventory.IsEmpty(craftedOut)) return null;
+        return craftedOut;
     }
 
 }

@@ -140,6 +140,11 @@ public abstract class Inventory : MonoBehaviour
         return GetCount(name) <= 0;
     }
 
+    public bool IsEmpty(ItemSO item)
+    {
+        return GetCount(item) <= 0;
+    }
+
     public IReadOnlyDictionary<ItemSO, int> GetAllItems() => Items;
 
     public void GiveItemToOther(string itemName, int amount, Inventory other)
@@ -192,6 +197,20 @@ public abstract class Inventory : MonoBehaviour
     public ItemSO GetFirstItem()
     {
         return Items.Keys.ToList()[0] == null ? null : Items.Keys.ToList()[0];
+    }
+    public ItemSO GetFirstItemExcluding(ItemSO item, int depth = 0)
+    {
+        if (Items.Count <= depth) return null;
+        if (Items.Keys.ToList()[depth] == null) return null;
+
+        if (Items.Keys.ToList()[depth] == item)
+        {
+            return GetFirstItemExcluding(item, depth + 1);
+        }
+
+        return Items.Keys.ToList()[depth];
+
+
     }
 
     public abstract void OnInventoryChanged();
