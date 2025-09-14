@@ -49,9 +49,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41410c172e810230dbd42e21550b90c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nextTargets: []
+  provider: {fileID: 0}
+  capacity: 3
+  speed: 0.5
   itemsOnBelt: []
-  nextBelt: {fileID: 0}
-  lr: {fileID: -3540437294743438871}
+  lrPref: {fileID: -3540437294743438871}
 --- !u!114 &3948842298701436873
 MonoBehaviour:
   m_ObjectHideFlags: 0

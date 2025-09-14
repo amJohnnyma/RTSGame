@@ -1,144 +1,138 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
+
+[System.Serializable]
+public class BeltItem
+{
+    public ItemSO item;
+    public float progress; // 0 = start, 1 = end
+}
 
 public class ConveyorBelt : MonoBehaviour
 {
-    private bool canTakeMore = true;
-    private bool canGive = false;
-    private bool isTransferring = false;
+    [Tooltip("Next belts or connections this belt can pass items to.")]
+    public List<MonoBehaviour> nextTargets = new(); // can be ConveyorBelt or ConveyorConnection
 
-    public List<ItemSO> itemsOnBelt = new();
-    public ConveyorBelt nextBelt;
+    [Tooltip("Optional provider connection if this belt pulls directly from an inventory.")]
+    public ConveyorConnection provider;
+
+    [Tooltip("Max number of items that can be on this belt at once.")]
+    public int capacity = 3;
+
+    [Tooltip("Speed of items along the belt (progress per second).")]
+    public float speed = 0.5f;
+
+    public List<BeltItem> itemsOnBelt = new();
     public LineRenderer lr;
+    private Vector3 startPos;
+    private Vector3 endPos;
 
     void Start()
     {
-        if (nextBelt != null)
+        // Store endpoints for fast lookup
+        startPos = transform.position;
+
+        if (nextTargets.Count > 0 && nextTargets[0] != null)
+            endPos = nextTargets[0].transform.position;
+        else
+            endPos = startPos + transform.forward * 1f; // fallback
+
+        if (lr != null)
         {
-            lr.positionCount = 2;
-            lr.SetPosition(0, this.transform.position);
-            lr.SetPosition(1, nextBelt.transform.position);
-
+            lr.positionCount = 2; // default line
+            lr.SetPosition(0, startPos);
+            lr.SetPosition(1, endPos);
         }
-
     }
 
     void FixedUpdate()
     {
-        UpdateVars();
+        // pull from provider if available
+        if (provider != null)
+            TryPullFromConnection(provider);
+
         MoveItems();
-    }
-
-    public bool CanTakeMore()
-    {
-        return canTakeMore;
-    }
-
-    public void TakeItemFrom(ItemSO item, Inventory inventory)
-    {
-        Debug.Log("Taking from inv");
-        // check if there is extra space (lets do 3 items per grid -> Which currently is each conveyer belt)
-        if (canTakeMore)
-        {
-            Debug.Log("Can take more irtems");
-            AddToBelt(item);
-            inventory.RemoveItem(item);
-        }
-        else
-        {
-            Debug.Log("Conveypr belt full");
-        }
-
-    }
-
-    public void GiveItemTo(Inventory inventory)
-    {
-        Debug.Log("giving to inv");
-        if (canGive && itemsOnBelt.Count > 0)
-        {
-            Debug.Log("Giving items");
-            ItemSO i = itemsOnBelt[0];
-            if (inventory.GetCount(i) >= i.maxStack) return;
-            RemoveFromBelt();
-            inventory.AddItem(i);
-        }
-
+        UpdateLineRenderer();
     }
 
     private void MoveItems()
     {
-        foreach (ItemSO item in itemsOnBelt)
+        for (int i = 0; i < itemsOnBelt.Count; i++)
         {
+            BeltItem beltItem = itemsOnBelt[i];
+            beltItem.progress += Time.fixedDeltaTime * speed;
 
-            // give to next belt (else the conveyer in will take from the last belt)
-            // move shader along
-
+            if (beltItem.progress >= 1f)
+            {
+                if (TryPassToNext(beltItem.item))
+                {
+                    itemsOnBelt.RemoveAt(i);
+                    i--;
+                }
+                else
+                {
+                    // Blocked: hold item at the end until next target can accept
+                    beltItem.progress = 0.99f;
+                }
+            }
         }
-        if (nextBelt == null) return;
-
-        TransferToNextBelt();
-
     }
 
-    private void TransferToNextBelt()
+    private bool TryPassToNext(ItemSO item)
     {
-        if (canGive)
+        foreach (var target in nextTargets)
         {
-            ItemSO i = itemsOnBelt[0];
-            AddItemToNextBelt(i);
-        }
+            if (target == null) continue;
 
+            if (target is ConveyorBelt nextBelt && nextBelt.CanTakeMore())
+            {
+                nextBelt.AddToBelt(item);
+                return true;
+            }
+            else if (target is ConveyorConnection conn && conn.IsReceiver && conn.TryReceive(item))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private void AddItemToNextBelt(ItemSO item)
-    {
-        if (nextBelt.CanTakeMore())
-        {
-            Debug.Log("Move to next belt");
-            nextBelt.AddToBelt(item);
-            RemoveFromBelt();
-
-        }
-
-    }
+    public bool CanTakeMore() => itemsOnBelt.Count < capacity;
 
     public void AddToBelt(ItemSO item)
     {
-        if(!isTransferring)
-            StartCoroutine(AddToBeltWithDelay(item));
+        if (CanTakeMore())
+            itemsOnBelt.Add(new BeltItem { item = item, progress = 0f });
     }
 
-    private IEnumerator AddToBeltWithDelay(ItemSO item)
+    private void TryPullFromConnection(ConveyorConnection connection)
     {
-        isTransferring = true;
-        yield return new WaitForSeconds(0.2f); // 200ms
-        if (itemsOnBelt.Count < 3)
-            itemsOnBelt.Add(item);
+        if (!CanTakeMore() || connection == null || connection.IsReceiver) return;
 
-        isTransferring = false;
+        ItemSO item = connection.TryProvide();
+        if (item != null)
+            AddToBelt(item);
     }
 
-    public void RemoveFromBelt()
+        /// Updates the LineRenderer to show each item along the belt path.
+    private void UpdateLineRenderer()
     {
-        StartCoroutine(RemoveFromBeltWithDelay());
-    }
+        if (lr == null) return;
 
-    private IEnumerator RemoveFromBeltWithDelay()
-    {
-        isTransferring = true;
-        yield return new WaitForSeconds(0.2f); // 200ms
-        if (itemsOnBelt.Count > 0)
-            itemsOnBelt.RemoveAt(0);
-        isTransferring = false;
-    }
+        if (itemsOnBelt.Count == 0)
+        {
+            // fallback: just show base belt line
+            lr.positionCount = 2;
+            lr.SetPosition(0, startPos);
+            lr.SetPosition(1, endPos);
+            return;
+        }
 
-
-
-    private void UpdateVars()
-    {
-        canGive = itemsOnBelt.Count > 0;
-        canTakeMore = itemsOnBelt.Count < 3;
+        lr.positionCount = itemsOnBelt.Count;
+        for (int i = 0; i < itemsOnBelt.Count; i++)
+        {
+            Vector3 pos = Vector3.Lerp(startPos, endPos, itemsOnBelt[i].progress);
+            lr.SetPosition(i, pos);
+        }
     }
 }
