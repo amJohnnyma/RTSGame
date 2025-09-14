@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.39981458, y: 0, z: 0.684437, w: 0.6096674}
   m_LocalPosition: {x: -236.23442, y: -59.51091, z: 130.79893}
-  m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -54,7 +54,7 @@ MonoBehaviour:
   capacity: 3
   speed: 0.5
   itemsOnBelt: []
-  lrPref: {fileID: -3540437294743438871}
+  lr: {fileID: 0}
 --- !u!114 &3948842298701436873
 MonoBehaviour:
   m_ObjectHideFlags: 0

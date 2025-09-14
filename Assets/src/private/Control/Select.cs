@@ -200,6 +200,7 @@ public class Select : MonoBehaviour
             Vector3[] normals = mesh.normals;
 
             int triIndex = hit.triangleIndex;
+            if ((triIndex * 3) + 2 >= mesh.triangles.Length) return;
 
             int i0 = mesh.triangles[triIndex * 3 + 0];
             int i1 = mesh.triangles[triIndex * 3 + 1];
@@ -226,8 +227,9 @@ public class Select : MonoBehaviour
 
             Debug.Log("Instantiate");
             // Parent new instances under container`
-            GameObject go = Instantiate(presets[buildOption - 1], pos, rot, gameObject.transform) as GameObject;
+            GameObject go = Instantiate(presets[buildOption - 1], pos, rot) as GameObject;
             go.tag = "Entity";
+            go.transform.SetParent(gameObject.transform, true);         
             world.AddPlacedEntity(pos, go);
 
         }

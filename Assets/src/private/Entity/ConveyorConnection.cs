@@ -10,7 +10,10 @@ public class ConveyorConnection : MonoBehaviour
 
     private Inventory inventory;
     public LineRenderer lr;
+    public bool inUse = false;
 
+
+//How about belts also have conveyer connections. That way everything interacts with eachother in the same way and i can use it to make merge and splits?
     void Start()
     {
         inventory = GetComponentInParent<Inventory>();

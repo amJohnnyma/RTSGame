@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
+using Unity.VisualScripting;
 using UnityEditor.Il2Cpp;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -29,8 +31,9 @@ public class World : MonoBehaviour
     private IcosphereGenerator icoSphereGen = new IcosphereGenerator();
     private IcosphereTerrain terrain;
 
-    public Dictionary<Vector3, GameObject> placedEntities = new Dictionary<Vector3, GameObject>();
-    public Dictionary<Vector3, GameObject> foundHarvestables = new Dictionary<Vector3, GameObject>();
+    public Dictionary<Vector3, GameObject> placedEntities = new();
+    private Dictionary<Vector3, GameObject> foundHarvestables = new();
+    private Dictionary<Vector3, GameObject> buildings = new();
 
 
     private void OnValidate()
@@ -46,6 +49,9 @@ public class World : MonoBehaviour
         //also adds preplaced buildings
         spawner.SpawnOnTerrain(meshFilter.sharedMesh, this.gameObject.transform, this);
         //Track all spawned harvestables
+
+        // add buildings
+        AddBuildingsFromPlaced();
 
     }
 
@@ -106,8 +112,34 @@ public class World : MonoBehaviour
 
     public void AddPlacedEntity(Vector3 key, GameObject go)
     {
-        placedEntities[key] = go;
-     //   Debug.Log("Added at " + key.ToString());
+        try
+        {
+
+            placedEntities.Add(key,go);
+
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e);
+
+        }
+
+
+        if (go.GetComponent<EntityStats>().type == Type.BUILDING)
+        {
+            try
+            {
+                buildings.Add(key,go);
+
+
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e);
+
+            }
+        }
+        //   Debug.Log("Added at " + key.ToString());
     }
     public void DestroyPlacedEntity(Vector3 key)
     {
@@ -131,7 +163,7 @@ public class World : MonoBehaviour
         var values = placedEntities.Values.ToList();
 
         // Pick a random index
-        int randomIndex = Random.Range(0, values.Count);
+        int randomIndex = UnityEngine.Random.Range(0, values.Count);
 
         return values[randomIndex];
     }
@@ -150,7 +182,7 @@ public class World : MonoBehaviour
             {
                 count++;
                 // Reservoir sampling: each item has 1/count chance to be picked
-                if (Random.Range(0, count) == 0)
+                if (UnityEngine.Random.Range(0, count) == 0)
                     selected = kvp.Value;
             }
         }
@@ -172,7 +204,7 @@ public class World : MonoBehaviour
                 if (GetFoundHarvestable(kvp.Key) == null)
                 {
                     count++;
-                    if (Random.Range(0, count) == 0) // reservoir sampling
+                    if (UnityEngine.Random.Range(0, count) == 0) // reservoir sampling
                         selected = kvp.Value;
                 }
             }
@@ -187,7 +219,7 @@ public class World : MonoBehaviour
         if (foundHarvestables.Count <= 0) return null;
         var vals = foundHarvestables.Values.ToList();
 
-        int randomIndex = Random.Range(0, vals.Count);
+        int randomIndex = UnityEngine.Random.Range(0, vals.Count);
 
         return vals[randomIndex];
     }
@@ -203,12 +235,15 @@ public class World : MonoBehaviour
 
     public void AddFoundHarvestable(Vector3 key, GameObject go)
     {
-        if (!foundHarvestables.ContainsKey(key))
-        {
-            foundHarvestables[key] = go;
-            Debug.Log("Harvestable added at " + key.ToString());
 
-        }
+        try {
+        foundHarvestables.Add(key, go);
+
+        } catch (Exception e) { Debug.Log(e); }
+
+        Debug.Log("Harvestable added at " + key.ToString());
+
+        
 
     }
 
@@ -261,6 +296,26 @@ public class World : MonoBehaviour
     public IReadOnlyList<Vector3> GetUnfoundHarvestableSnapshot()
     {
         return unfoundHarvestablePositions;
+    }
+
+    private void AddBuildingsFromPlaced()
+    {
+        foreach (var (k, v) in placedEntities)
+        {
+            if (v.GetComponent<EntityStats>().type == Type.BUILDING)
+            {
+                try
+                {
+                    buildings.Add(k, v);
+
+            
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                }
+            }
+        }
     }
 
     

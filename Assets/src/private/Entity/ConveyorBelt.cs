@@ -43,6 +43,9 @@ public class ConveyorBelt : MonoBehaviour
             lr.SetPosition(0, startPos);
             lr.SetPosition(1, endPos);
         }
+
+        if(provider)
+            provider.inUse = true;
     }
 
     void FixedUpdate()
