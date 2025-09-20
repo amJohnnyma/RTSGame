@@ -2,3 +2,8 @@
     font-size: 20px;
     text-overflow: ellipsis;
 }
+
+.craftOption {
+    max-width: 10%;
+    max-height: 10%;
+}

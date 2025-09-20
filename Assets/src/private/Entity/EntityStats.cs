@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public enum Type
 {
@@ -89,11 +90,57 @@ public class EntityStats : MonoBehaviour
     public TeamData teamData; //teams name, alliances
     public List<Attack> attacks;
     public List<DefenseType> defences;
+    private Crafter crafter;
+    
 
 
     void Awake()
     {
         this.gameObject.tag = eTag;
+        Crafter c = GetComponent<Crafter>();
+        if (c != null) crafter = c;
+
+    }
+    public void ActivateUI(VisualElement root, VisualTreeAsset itemTemplate)
+    {
+        root.style.display = DisplayStyle.Flex;
+        Label namelbl = root.Q<Label>("nameLbl");
+        VisualElement craftRoot = root.Q<VisualElement>("CraftingDisplay");
+
+        if (crafter != null)
+        {
+            craftRoot.style.display = DisplayStyle.Flex;
+
+            // should be temp
+            ListView craftList = root.Q<ListView>("CraftOptions");
+
+            // Create a list of 50 dummy items
+            var items = new string[50];
+            for (int i = 0; i < items.Length; i++)
+                items[i] = $"Item {i}";
+
+            craftList.makeItem = () =>
+            {
+                return itemTemplate.Instantiate();
+            };
+
+            craftList.bindItem = (element, i) =>
+            {
+                // set text, images etc.
+            };
+
+            craftList.itemsSource = items;
+            craftList.selectionType = SelectionType.None;
+            craftList.style.flexDirection = FlexDirection.Row;
+            craftList.style.flexWrap = Wrap.Wrap;
+
+        }
+        else
+        {
+            craftRoot.style.display = DisplayStyle.None;
+
+        }
+        namelbl.text = this.ToString();
 
     }
     public override string ToString()

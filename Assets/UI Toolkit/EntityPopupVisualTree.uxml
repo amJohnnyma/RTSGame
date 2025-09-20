@@ -1,6 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI%20Toolkit/EntityPopupStyle.uss?fileID=7433441132597879392&amp;guid=3fada4e4e9baed525b8fa0e1ddb6874e&amp;type=3#EntityPopupStyle" />
-    <ui:VisualElement style="flex-grow: 1; align-self: flex-end; top: 1px; right: 1px; background-color: rgb(255, 255, 255); width: 30%; height: 10%; align-items: flex-start;">
-        <ui:Label tabindex="-1" text="Null" parse-escape-sequences="true" display-tooltip-when-elided="true" name="nameLbl" class="nameLbl" />
+    <ui:VisualElement name="Root" style="flex-grow: 1; align-self: flex-end; top: auto; right: auto; background-color: rgb(255, 255, 255); width: 100%; height: 100%; align-items: center; opacity: 1; visibility: hidden; flex-direction: row; flex-basis: auto; flex-wrap: nowrap;">
+        <ui:VisualElement name="MainInfo" style="flex-grow: 1; width: auto; height: 100%; visibility: visible; align-self: auto; -unity-background-image-tint-color: rgba(255, 255, 255, 0); background-color: rgba(0, 93, 255, 0.2); max-width: 30%; max-height: 100%; flex-direction: row; align-items: flex-start;">
+            <ui:Label tabindex="-1" text="Null" parse-escape-sequences="true" display-tooltip-when-elided="true" name="nameLbl" class="nameLbl" style="visibility: visible; flex-wrap: wrap; white-space: normal;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="CraftingDisplay" style="flex-grow: 1; height: 100%; width: 70%; align-self: auto; background-color: rgba(255, 0, 14, 0.2); visibility: visible; justify-content: flex-start; top: auto; flex-basis: auto; flex-direction: column; align-items: flex-start; max-width: 70%; max-height: 100%;">
+            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Label" />
+            <ui:ListView name="CraftOptions" style="background-color: rgba(0, 0, 0, 0.17); display: flex; align-items: auto; max-height: 4000%; width: 100%; height: 100%; flex-direction: row; flex-wrap: wrap; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 1px; padding-right: 1px; padding-bottom: 1px; padding-left: 1px; flex-grow: 1;" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

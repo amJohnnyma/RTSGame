@@ -24,6 +24,7 @@ public class Select : MonoBehaviour
 
     [SerializeField] private MeshCollider refMesh;
     [SerializeField] private GridHighlighter gridHighlighter;
+    public VisualTreeAsset itemTemplate;
 
     // Start is called before the first frame update
     void Start()
@@ -413,9 +414,10 @@ private void SelectEntity()
         return;
     }
 
-    popupRoot.style.display = DisplayStyle.Flex;
-    Label nameLbl = popupRoot.Q<Label>("nameLbl");
-    nameLbl.text = stats.ToString();
+    stats.ActivateUI(popupRoot, itemTemplate);
+    //Label nameLbl = popupRoot.Q<Label>("nameLbl");
+    //nameLbl.text = stats.ToString();
+
 }
 
 
