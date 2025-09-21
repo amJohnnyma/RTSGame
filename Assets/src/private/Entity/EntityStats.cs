@@ -133,16 +133,16 @@ public class EntityStats : MonoBehaviour
             craftList.selectionType = SelectionType.None;
             craftList.style.flexDirection = FlexDirection.Row;
             craftList.style.flexWrap = Wrap.Wrap;
-            namelbl.text = this.ToString();
-            return true;
 
         }
         else
         {
+            root.style.display = DisplayStyle.Flex;
             craftRoot.style.display = DisplayStyle.None;
-            return false;
 
         }
+        namelbl.text = this.ToString();
+        return true;
 
     }
     public bool DeactivateUI(VisualElement root)

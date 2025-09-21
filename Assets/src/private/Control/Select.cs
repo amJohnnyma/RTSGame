@@ -27,7 +27,7 @@ public class Select : MonoBehaviour
     [SerializeField] private GridHighlighter gridHighlighter;
     public VisualTreeAsset itemTemplate;
     private bool selectionUIDisplayed = false;
-    private EntityStats displayedStats;
+   // private EntityStats displayedStats;
 
 
     // Start is called before the first frame update
@@ -343,7 +343,7 @@ public class Select : MonoBehaviour
         }
 
         // Show popup if it has EntityStats
-        displayedStats = go.GetComponent<EntityStats>();
+        EntityStats displayedStats = go.GetComponent<EntityStats>();
         if (displayedStats == null)
         {
             popupRoot.style.display = DisplayStyle.None;
@@ -355,6 +355,7 @@ public class Select : MonoBehaviour
         {
             buildMenu.SetActive(false);
         }
+        
         //Label nameLbl = popupRoot.Q<Label>("nameLbl");
         //nameLbl.text = stats.ToString();
 
@@ -391,11 +392,11 @@ public class Select : MonoBehaviour
 
     public void CloseEntityClickPopup()
     {
-        selectionUIDisplayed = displayedStats.DeactivateUI(popupRoot);
-        if (!selectionUIDisplayed)
-        {
-            buildMenu.SetActive(true);
-        }
+        popupRoot.style.display = DisplayStyle.None;
+        selectionUIDisplayed = false;
+        //selectionUIDisplayed = displayedStats.DeactivateUI(popupRoot);
+        buildMenu.SetActive(true);
+        
     }
 
     public bool IsUIDisplayed()
