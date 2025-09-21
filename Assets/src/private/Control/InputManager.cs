@@ -18,11 +18,14 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        foreach (var binding in bindings)
+        if (buildMenu.CanCheckInput())
         {
-            if (Input.GetKeyDown(binding.key))
+            foreach (var binding in bindings)
             {
-                KeyPressAction(binding.action);
+                if (Input.GetKeyDown(binding.key))
+                {
+                    KeyPressAction(binding.action);
+                }
             }
         }
     }

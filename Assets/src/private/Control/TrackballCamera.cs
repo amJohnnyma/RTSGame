@@ -13,6 +13,7 @@ public class TrackballCamera : MonoBehaviour
     public float maxDistance = 50f;
 
     private Quaternion rotation;
+    private Select select;
 
     void Start()
     {
@@ -26,25 +27,31 @@ public class TrackballCamera : MonoBehaviour
         rotation = transform.rotation;
         distance = Vector3.Distance(transform.position, target.position);
 
+        select = target.gameObject.GetComponentInChildren<Select>();
+
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
-        if (Input.GetMouseButton(1))
+        if (select.IsUIDisplayed())
         {
-            float dx = Input.GetAxis("Mouse X");
-            float dy = Input.GetAxis("Mouse Y");
-
-            Vector3 right = rotation * Vector3.right;
-            Vector3 up = rotation * Vector3.up;
-
-            Quaternion yaw = Quaternion.AngleAxis(dx * sensitivity * distance, up);
-            Quaternion pitch = Quaternion.AngleAxis(-dy * sensitivity * distance, right);
-
-            rotation = yaw * pitch * rotation;
-
+            return;
         }
+        if (Input.GetMouseButton(1))
+            {
+                float dx = Input.GetAxis("Mouse X");
+                float dy = Input.GetAxis("Mouse Y");
+
+                Vector3 right = rotation * Vector3.right;
+                Vector3 up = rotation * Vector3.up;
+
+                Quaternion yaw = Quaternion.AngleAxis(dx * sensitivity * distance, up);
+                Quaternion pitch = Quaternion.AngleAxis(-dy * sensitivity * distance, right);
+
+                rotation = yaw * pitch * rotation;
+
+            }
 
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         if(scrollInput > 0)

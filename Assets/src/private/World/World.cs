@@ -145,7 +145,7 @@ public class World : MonoBehaviour
     {
         Destroy(placedEntities[key]);
         placedEntities.Remove(key);
-        Debug.Log("Destroy at " + key.ToString());
+     //   Debug.Log("Destroy at " + key.ToString());
 
     }
     public GameObject GetPlacedEntity(Vector3 key)

@@ -9,7 +9,7 @@ public class EntitySpawner : MonoBehaviour
 
     public void SpawnOnTerrain(Mesh terrainMesh, Transform terrainTransform, World world)
     {
-        Debug.Log("Spawn on terrain");
+      //  Debug.Log("Spawn on terrain");
 
         if (spawnContainer == null)
         {
@@ -27,8 +27,8 @@ public class EntitySpawner : MonoBehaviour
             else if (type == Type.BUILDING)
             {
                 world.AddPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position, spawnContainer.transform.GetChild(i).gameObject);
-                Debug.Log("Added building");
-                Debug.Log(world.GetPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position).GetComponent<EntityStats>().ToString());
+            //    Debug.Log("Added building");
+            //    Debug.Log(world.GetPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position).GetComponent<EntityStats>().ToString());
 
             }
             else { }
@@ -49,7 +49,7 @@ public class EntitySpawner : MonoBehaviour
             if (h > maxH) maxH = h;
 
         }
-        Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
+       // Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
         
 
         foreach (var preset in presets)

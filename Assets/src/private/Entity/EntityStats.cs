@@ -101,7 +101,7 @@ public class EntityStats : MonoBehaviour
         if (c != null) crafter = c;
 
     }
-    public void ActivateUI(VisualElement root, VisualTreeAsset itemTemplate)
+    public bool ActivateUI(VisualElement root, VisualTreeAsset itemTemplate)
     {
         root.style.display = DisplayStyle.Flex;
         Label namelbl = root.Q<Label>("nameLbl");
@@ -133,14 +133,22 @@ public class EntityStats : MonoBehaviour
             craftList.selectionType = SelectionType.None;
             craftList.style.flexDirection = FlexDirection.Row;
             craftList.style.flexWrap = Wrap.Wrap;
+            namelbl.text = this.ToString();
+            return true;
 
         }
         else
         {
             craftRoot.style.display = DisplayStyle.None;
+            return false;
 
         }
-        namelbl.text = this.ToString();
+
+    }
+    public bool DeactivateUI(VisualElement root)
+    {
+        root.style.display = DisplayStyle.None;
+        return false; // not displayed anymore
 
     }
     public override string ToString()

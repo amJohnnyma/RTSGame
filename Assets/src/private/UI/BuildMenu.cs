@@ -56,9 +56,18 @@ public class BuildMenu : MonoBehaviour
 
     public void ToggleSelectMode()
     {
+        if (select.IsUIDisplayed())
+        {
+            return;
+        }
         destroyMode = false;
         buildMode = false;
         selectMode = !selectMode;
         select.SetSelectOption(selectMode);
+    }
+
+    public bool CanCheckInput()
+    {
+        return !select.IsUIDisplayed();
     }
 }

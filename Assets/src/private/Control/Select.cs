@@ -13,6 +13,7 @@ public class Select : MonoBehaviour
 
     [SerializeField] private World world;
     [SerializeField] private UIDocument entityPopup;
+    [SerializeField] private GameObject buildMenu;
     private VisualElement popupRoot;
 
 
@@ -25,6 +26,9 @@ public class Select : MonoBehaviour
     [SerializeField] private MeshCollider refMesh;
     [SerializeField] private GridHighlighter gridHighlighter;
     public VisualTreeAsset itemTemplate;
+    private bool selectionUIDisplayed = false;
+    private EntityStats displayedStats;
+
 
     // Start is called before the first frame update
     void Start()
@@ -226,11 +230,11 @@ public class Select : MonoBehaviour
                 -normals[i2] * baryCenter.z;
             Quaternion rot = Quaternion.FromToRotation(normal, normal.normalized);
 
-            Debug.Log("Instantiate");
+           // Debug.Log("Instantiate");
             // Parent new instances under container`
             GameObject go = Instantiate(presets[buildOption - 1], pos, rot) as GameObject;
             go.tag = "Entity";
-            go.transform.SetParent(gameObject.transform, true);         
+            go.transform.SetParent(gameObject.transform, true);
             world.AddPlacedEntity(pos, go);
 
         }
@@ -274,151 +278,87 @@ public class Select : MonoBehaviour
         }
 
     }
-
-/*
     private void SelectEntity()
     {
-        if (!isSelecting)
+        if (!isSelecting || selectionUIDisplayed)
+        {
+            //  selectionUIDisplayed = false;
             return;
+        }
 
-        (MeshCollider meshCollider, RaycastHit hit) = HasHitMesh();
+        // Raycast that includes triggers
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (!Physics.Raycast(ray, out hit, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide))
+        {
+            popupRoot.style.display = DisplayStyle.None;
+            return;
+        }
+
         GameObject go = null;
 
-        if (hit.collider != null)
+        try
         {
-            try
-            {
-                // First: try selection based on the hit point
-                Vector3 pos = hit.point;
-                go = world.GetPlacedEntity(pos);
+            Vector3 pos = hit.point;
 
-                // If nothing found, fall back to mesh triangle center
-                if (go == null && meshCollider != null && meshCollider.sharedMesh.isReadable)
-                {
-                    Mesh mesh = meshCollider.sharedMesh;
-                    int triIndex = hit.triangleIndex;
-
-                    int i0 = mesh.triangles[triIndex * 3 + 0];
-                    int i1 = mesh.triangles[triIndex * 3 + 1];
-                    int i2 = mesh.triangles[triIndex * 3 + 2];
-
-                    Vector3[] vertices = mesh.vertices;
-
-                    Vector3 v0 = meshCollider.transform.TransformPoint(vertices[i0]);
-                    Vector3 v1 = meshCollider.transform.TransformPoint(vertices[i1]);
-                    Vector3 v2 = meshCollider.transform.TransformPoint(vertices[i2]);
-
-                    pos = (v0 + v1 + v2) / 3f;
-
-                    go = world.GetPlacedEntity(pos);
-                }
-
-                // If still nothing, fallback to the collider's GameObject
-                if (go == null)
-                    go = hit.collider.gameObject;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-
-            Debug.Log("Select");
-
+            // Try to get placed entity from world
+            go = world.GetPlacedEntity(pos);
             if (go != null)
             {
-                popupRoot.style.display = DisplayStyle.Flex;
-                Label nameLbl = popupRoot.Q<Label>("nameLbl");
-
-                EntityStats stats = go.GetComponent<EntityStats>();
-                if (stats == null)
-                {
-                    popupRoot.style.display = DisplayStyle.None;
-                    return;
-                }
-
-                nameLbl.text = stats.ToString();
+                Debug.Log("Found at " + pos.ToString());
             }
-            else
+
+            // Fallback: if nothing found, try mesh triangle center
+            MeshCollider meshCollider = hit.collider as MeshCollider;
+            if (go == null && meshCollider != null && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
             {
-                popupRoot.style.display = DisplayStyle.None;
+                int triIndex = hit.triangleIndex;
+                Mesh mesh = meshCollider.sharedMesh;
+                int[] tris = mesh.triangles;
+                Vector3[] verts = mesh.vertices;
+
+                Vector3 v0 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3]]);
+                Vector3 v1 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 1]]);
+                Vector3 v2 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 2]]);
+
+                pos = (v0 + v1 + v2) / 3f;
+
+                go = world.GetPlacedEntity(pos);
             }
+
+            // Final fallback: use the collider itself
+            go ??= hit.collider.gameObject;
         }
-    }
-*/
-private void SelectEntity()
-{
-    if (!isSelecting)
-        return;
-
-    // Raycast that includes triggers
-    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-    RaycastHit hit;
-    if (!Physics.Raycast(ray, out hit, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide))
-    {
-        popupRoot.style.display = DisplayStyle.None;
-        return;
-    }
-
-    GameObject go = null;
-
-    try
-    {
-        Vector3 pos = hit.point;
-
-        // Try to get placed entity from world
-        go = world.GetPlacedEntity(pos);
-        if (go != null)
+        catch (Exception e)
         {
-            Debug.Log("Found at " + pos.ToString());
+            Debug.LogError(e);
+            popupRoot.style.display = DisplayStyle.None;
+            return;
         }
 
-        // Fallback: if nothing found, try mesh triangle center
-                MeshCollider meshCollider = hit.collider as MeshCollider;
-        if (go == null && meshCollider != null && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
+        if (go == null)
         {
-            int triIndex = hit.triangleIndex;
-            Mesh mesh = meshCollider.sharedMesh;
-            int[] tris = mesh.triangles;
-            Vector3[] verts = mesh.vertices;
-
-            Vector3 v0 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3]]);
-            Vector3 v1 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 1]]);
-            Vector3 v2 = meshCollider.transform.TransformPoint(verts[tris[triIndex * 3 + 2]]);
-
-            pos = (v0 + v1 + v2) / 3f;
-
-            go = world.GetPlacedEntity(pos);
+            popupRoot.style.display = DisplayStyle.None;
+            return;
         }
 
-        // Final fallback: use the collider itself
-        go ??= hit.collider.gameObject;
-    }
-    catch (Exception e)
-    {
-        Debug.LogError(e);
-        popupRoot.style.display = DisplayStyle.None;
-        return;
-    }
+        // Show popup if it has EntityStats
+        displayedStats = go.GetComponent<EntityStats>();
+        if (displayedStats == null)
+        {
+            popupRoot.style.display = DisplayStyle.None;
+            return;
+        }
 
-    if (go == null)
-    {
-        popupRoot.style.display = DisplayStyle.None;
-        return;
+        selectionUIDisplayed = displayedStats.ActivateUI(popupRoot, itemTemplate);
+        if (selectionUIDisplayed)
+        {
+            buildMenu.SetActive(false);
+        }
+        //Label nameLbl = popupRoot.Q<Label>("nameLbl");
+        //nameLbl.text = stats.ToString();
+
     }
-
-    // Show popup if it has EntityStats
-    EntityStats stats = go.GetComponent<EntityStats>();
-    if (stats == null)
-    {
-        popupRoot.style.display = DisplayStyle.None;
-        return;
-    }
-
-    stats.ActivateUI(popupRoot, itemTemplate);
-    //Label nameLbl = popupRoot.Q<Label>("nameLbl");
-    //nameLbl.text = stats.ToString();
-
-}
 
 
     public void SetBuildOption(bool canBuild, int buildOption)
@@ -447,5 +387,19 @@ private void SelectEntity()
         {
             popupRoot.style.display = DisplayStyle.None;
         }
+    }
+
+    public void CloseEntityClickPopup()
+    {
+        selectionUIDisplayed = displayedStats.DeactivateUI(popupRoot);
+        if (!selectionUIDisplayed)
+        {
+            buildMenu.SetActive(true);
+        }
+    }
+
+    public bool IsUIDisplayed()
+    {
+        return selectionUIDisplayed;
     }
 }

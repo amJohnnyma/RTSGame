@@ -14,7 +14,7 @@ public class PlacedEntityAlignment : Editor
 
         if (GUILayout.Button("Snap to triangle center"))
         {
-            Debug.Log("Aligning entity");
+         //   Debug.Log("Aligning entity");
             entity.SnapToTriangle();   
         }
     }

@@ -58,7 +58,7 @@ public class IcosphereTerrain : MonoBehaviour
             if (h < minH) minH = h;
             if (h > maxH) maxH = h;
         }
-        Debug.Log($"Min height: {minH}, Max height: {maxH}");
+     //   Debug.Log($"Min height: {minH}, Max height: {maxH}");
 
         // 2️⃣ Sample all Perlin values (after flatness) and store
         List<float> perlinSamples = new List<float>();
@@ -80,7 +80,7 @@ public class IcosphereTerrain : MonoBehaviour
         // 3️⃣ Compute min/max of Perlin after flatness
         float minP = perlinSamples.Min();
         float maxP = perlinSamples.Max();
-        Debug.Log($"Perlin Min: {minP}, Max: {maxP}");
+    //    Debug.Log($"Perlin Min: {minP}, Max: {maxP}");
 
         // Print histogram (10 bins)
         int[] histogram = new int[10];
@@ -89,12 +89,12 @@ public class IcosphereTerrain : MonoBehaviour
             int bin = Mathf.Clamp(Mathf.FloorToInt(val * 10f), 0, 9);
             histogram[bin]++;
         }
-        Debug.Log("Perlin distribution (10 bins):");
+    //    Debug.Log("Perlin distribution (10 bins):");
         for (int i = 0; i < 10; i++)
         {
             float binMin = i / 10f;
             float binMax = (i + 1) / 10f;
-            Debug.Log($"Bin {i} ({binMin:F1}-{binMax:F1}): {histogram[i]}");
+      //      Debug.Log($"Bin {i} ({binMin:F1}-{binMax:F1}): {histogram[i]}");
         }
 
         // 4️⃣ Now assign colors and offsets
