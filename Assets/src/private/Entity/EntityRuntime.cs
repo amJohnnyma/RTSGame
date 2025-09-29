@@ -20,6 +20,7 @@ public class EntityRuntime : MonoBehaviour
     public Transform mainTarget;
     public Collider worldCollider;
     public World world;
+    [HideInInspector] public Vector3 homePos;
 
     public bool returningHome = true;
 
@@ -45,6 +46,10 @@ public class EntityRuntime : MonoBehaviour
     [HideInInspector] public int chosenScore;
     [HideInInspector] public IEntityBehaviour behaviorHandler;
     [HideInInspector] public Vector3 pendingTargetPos = Vector3.positiveInfinity;
+    [HideInInspector] public Vector3 currentPos = Vector3.zero;
+
+    [Header("Tasks")]
+    [SerializeField] public TaskList taskList = new();
 
     void Awake()
     {
@@ -65,6 +70,8 @@ public class EntityRuntime : MonoBehaviour
                 behaviorHandler = new ScoutBehavior(world);
                 break;
         }
+
+        homePos = home.transform.position;
 
 
 

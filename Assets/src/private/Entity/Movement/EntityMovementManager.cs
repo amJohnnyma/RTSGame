@@ -26,19 +26,24 @@ public class EntityMovementManager : MonoBehaviour
 
         Vector3[] positions = new Vector3[entities.Count];
         Vector3[] targetPositions = new Vector3[entities.Count];
+        ITask[] task = new ITask[entities.Count];
 
         for (int i = 0; i < entities.Count; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
             targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
+            task[i] = entities[i].taskList.GetCurrentTask();
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Count, i =>
         {
             var entity = entities[i];
             if (targetPositions[i] == null) targetPositions[i] = positions[i];
-
-            entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i]);
+            if (task[i] == null)
+            {
+                task[i] = new Move(targetPositions[i], 1);
+            }
+            entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i], task[i]);
 
         });
 

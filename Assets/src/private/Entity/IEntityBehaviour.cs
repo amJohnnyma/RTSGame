@@ -5,7 +5,8 @@ public interface IEntityBehaviour
     void ComputeMove(
         EntityRuntime entity,
         Vector3 entityPosition,
-        Vector3 targetPosition
+        Vector3 targetPosition,
+        ITask task
         );
 
 }
@@ -67,60 +68,14 @@ public class ScoutBehavior : IEntityBehaviour
         this.visionRadius = visionRadius * 4;
     }
 
-    public void ComputeMove(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos)
+    public void ComputeMove(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, ITask task)
     {
-        if (!entity.returningHome && world.GetFoundHarvestable(targetPos))
+        // check task type
+        if (task.Type == TaskType.Move)
         {
-        // Current target is stale, force scout to re-pick
-        entity.pendingTargetPos = Vector3.positiveInfinity;
+            task.UpdateTask(entity, entityPos, targetPos, world, visionRadius);
         }
-
-
-        if (!entity.returningHome)
-        {
-            // --- Step 1: Pure data harvestable check ---
-            var harvestables = EntitySpatialUtils.GetNearbyHarvestables(world.GetUnfoundHarvestableSnapshot(), entityPos, visionRadius, world);
-            if (harvestables.Count > 0)
-            {
-                Vector3 bestHarvest = harvestables[0];
-                float bestDist = (bestHarvest - entityPos).sqrMagnitude;
-
-                for (int i = 1; i < harvestables.Count; i++)
-                {
-                    float dist = (harvestables[i] - entityPos).sqrMagnitude;
-                    if (dist < bestDist)
-                    {
-                        bestDist = dist;
-                        bestHarvest = harvestables[i];
-                    }
-                }
-
-                // Switch if closer than current target
-                if (bestDist < (targetPos - entityPos).sqrMagnitude || targetPos == Vector3.positiveInfinity)
-                {
-                    entity.pendingTargetPos = bestHarvest;
-                }
-            }
-        }
-
-
-        // --- Step 2: Movement scoring (still parallel safe) ---
-        var nearbyPoints = EntityMovementManager.GetNearbyPoints(entityPos, entity.radius, entity.checkPoints);
-        entity.lastNearbyPoints = nearbyPoints;
-
-        float bestScore = float.MinValue;
-        int bestIdx = 0;
-        for (int j = 0; j < nearbyPoints.Length; j++)
-        {
-            float score = 1f / ((nearbyPoints[j] - targetPos).sqrMagnitude + 0.001f);
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestIdx = j;
-            }
-        }
-
-        entity.chosenScore = bestIdx;
+        
 
 
     }
@@ -141,7 +96,7 @@ public class HarvestBehaviour : IEntityBehaviour
     }
 
 
-    public void ComputeMove(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos)
+    public void ComputeMove(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, ITask task)
     {
 
         if (!entity.returningHome)
