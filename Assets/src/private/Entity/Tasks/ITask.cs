@@ -52,7 +52,8 @@ public class Scout : ITask
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
-        
+
+
         
         if (!entity.returningHome && world.GetFoundHarvestable(targetPos))
         {
@@ -143,6 +144,8 @@ public class Scout : ITask
 
         
     }
+
+
 }
 
 public class Harvest : ITask
@@ -167,6 +170,8 @@ public class Harvest : ITask
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
+
+
         if (!entity.returningHome)
         {
             // --- Step 1: Pure data harvestable check ---
@@ -244,6 +249,7 @@ public class Harvest : ITask
             // Arrived at harvestable → take items
             var inv = entity.GetComponent<Inventory>();
             var targetInv = entity.mainTarget.GetComponent<EntityInventory>();
+            Debug.Log("Harvest resource");
             targetInv.GiveItemToOther("Red_Flower", 1, inv);
 
             if (targetInv.IsEmpty("Red_Flower"))
@@ -254,4 +260,6 @@ public class Harvest : ITask
             entity.returningHome = true;
         }
     }
+
+
 }

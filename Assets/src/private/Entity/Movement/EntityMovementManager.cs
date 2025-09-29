@@ -75,17 +75,25 @@ public class EntityMovementManager : MonoBehaviour
             }
 
 
-
-            if (entity.target == null)
+            if (!world.IsUnfoundHarvestables())
             {
-                entity.target = entity.home;
                 entity.rb.velocity = Vector3.zero;
+                count++;
                 continue;
             }
+            if (entity.target == null)
+                {
+                    entity.target = entity.home;
+                    entity.rb.velocity = Vector3.zero;
+                    count++;
+                    continue;
+                }
             if (entity.mainTarget == null)
             {
                 entity.mainTarget = entity.home;
                 entity.rb.velocity = Vector3.zero;
+                                count++;
+
                 continue;
             }
 
@@ -113,6 +121,7 @@ public class EntityMovementManager : MonoBehaviour
                     entity.taskList.RemoveTask(currTask);
                     task[count] = null;
                 }
+                count++;
 
                 continue;
             }

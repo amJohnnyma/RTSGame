@@ -6,10 +6,13 @@ public class EntitySpawner : MonoBehaviour
 
     public List<Entity> presets;
     public GameObject spawnContainer;
+    public Vector3 referencePoint = Vector3.zero; // optional, can be null if not needed
+    public float maxDistanceFromPoint = 10f; // maximum distance
+
 
     public void SpawnOnTerrain(Mesh terrainMesh, Transform terrainTransform, World world)
     {
-      //  Debug.Log("Spawn on terrain");
+        //  Debug.Log("Spawn on terrain");
 
         if (spawnContainer == null)
         {
@@ -27,8 +30,8 @@ public class EntitySpawner : MonoBehaviour
             else if (type == Type.BUILDING)
             {
                 world.AddPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position, spawnContainer.transform.GetChild(i).gameObject);
-            //    Debug.Log("Added building");
-            //    Debug.Log(world.GetPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position).GetComponent<EntityStats>().ToString());
+                //    Debug.Log("Added building");
+                //    Debug.Log(world.GetPlacedEntity(spawnContainer.transform.GetChild(i).gameObject.transform.position).GetComponent<EntityStats>().ToString());
 
             }
             else { }
@@ -49,8 +52,8 @@ public class EntitySpawner : MonoBehaviour
             if (h > maxH) maxH = h;
 
         }
-       // Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
-        
+        // Debug.Log($"Min height (h): {minH}, Max height (h): {maxH}");
+
 
         foreach (var preset in presets)
         {
@@ -69,6 +72,13 @@ public class EntitySpawner : MonoBehaviour
                 Vector3 pos = (v0 + v1 + v2) / 3f;
 
                 if (world.isPlacedEntityPresent(pos)) continue;
+
+                if (referencePoint != Vector3.zero)
+                {
+                    float distSqr = (pos - referencePoint).sqrMagnitude;
+                    if (distSqr > maxDistanceFromPoint * maxDistanceFromPoint)
+                        continue; // too far, skip this triangle
+                }
 
                 // Interpolate normal across triangle
                 Vector3 n0 = terrainTransform.TransformDirection(normals[i0]);
@@ -104,7 +114,7 @@ public class EntitySpawner : MonoBehaviour
                             offset = rend.bounds.extents.y;
                     }
 
-                   // go.transform.position += normal * offset;
+                    // go.transform.position += normal * offset;
                 }
             }
 

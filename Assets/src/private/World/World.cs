@@ -213,6 +213,39 @@ public class World : MonoBehaviour
         return selected; // null if none exist
     }
 
+public bool IsUnfoundHarvestables()
+{
+    List<Vector3> toRemove = new List<Vector3>();
+
+    foreach (var kvp in placedEntities)
+    {
+        if (kvp.Value == null)
+        {
+            // Mark destroyed object for removal
+            toRemove.Add(kvp.Key);
+            continue;
+        }
+
+        var stats = kvp.Value.GetComponent<EntityStats>();
+        if (stats != null && stats.type == Type.HARVESTABLE)
+        {
+            // Only consider harvestables not yet found
+            if (GetFoundHarvestable(kvp.Key) == null)
+            {
+                return true;
+            }
+        }
+    }
+
+    // Remove destroyed objects from the dictionary
+    foreach (var key in toRemove)
+    {
+        placedEntities.Remove(key);
+    }
+
+    return false;
+}
+
     public GameObject GetRandomFoundHarvestable()
     {
 
@@ -223,6 +256,8 @@ public class World : MonoBehaviour
 
         return vals[randomIndex];
     }
+
+
 
 
 
