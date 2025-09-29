@@ -108,7 +108,27 @@ public class EntityRuntime : MonoBehaviour
 
     }
 
+    public void TakeItem()
+    {
+
+    }
+
     public void SetTargetToggle()
+    {
+        // If mainTarget is null, pick a random entity in the world
+        /*
+        if (mainTarget == null)
+        {
+            var randomEntity = world.GetRandomPlacedEntity();
+            if (randomEntity != null)
+                mainTarget = randomEntity.transform;
+        }
+*/
+
+    }
+    
+    /*
+   public void SetTargetToggle()
     {
         // If mainTarget is null, pick a random entity in the world
         if (mainTarget == null)
@@ -148,7 +168,7 @@ public class EntityRuntime : MonoBehaviour
         }
         else if (behaviour == EntityBehaviour.HARVEST)
         {
-            
+
             if (returningHome)
             {
                 // Arrived home, now pick next target harvestable or wander
@@ -211,5 +231,6 @@ public class EntityRuntime : MonoBehaviour
             }
         }
     }
+    */
 
 }

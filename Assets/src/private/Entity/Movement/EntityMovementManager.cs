@@ -33,24 +33,48 @@ public class EntityMovementManager : MonoBehaviour
             positions[i] = entities[i].transform.position;      // main thread copy
             targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
             task[i] = entities[i].taskList.GetCurrentTask();
+             if (task[i] == null)
+            {
+                switch (entities[i].behaviour)
+                {
+                    case EntityBehaviour.SCOUT:
+                        task[i] = new Scout(targetPositions[i], 9);
+                        break;
+                    case EntityBehaviour.HARVEST:
+                        task[i] = new Harvest(targetPositions[i], 9);
+                        break;
+                    case EntityBehaviour.DEFAULT:
+                        task[i] = new Scout(targetPositions[i], 9);
+                        break;
+                }
+
+                entities[i].taskList.AddTask(task[i]);
+
+            }
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Count, i =>
         {
             var entity = entities[i];
             if (targetPositions[i] == null) targetPositions[i] = positions[i];
-            if (task[i] == null)
-            {
-                task[i] = new Move(targetPositions[i], 1);
-            }
+
             entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i], task[i]);
+            
+
 
         });
 
+        int count = 0;
         // --- Phase 2: Main thread - raycast to terrain and move Rigidbody ---
         foreach (var entity in entities)
         {
-            if (entity.rb == null) continue;
+            if (entity.rb == null)
+            {
+                count++;
+                continue;
+            }
+
+
 
             if (entity.target == null)
             {
@@ -66,18 +90,30 @@ public class EntityMovementManager : MonoBehaviour
             }
 
             if (entity.pendingTargetPos != Vector3.positiveInfinity)
+            {
+                if (world.placedEntities.TryGetValue(entity.pendingTargetPos, out var go))
                 {
-                    if (world.placedEntities.TryGetValue(entity.pendingTargetPos, out var go))
-                    {
-                        entity.target = go.transform;
-                    }
-                    entity.pendingTargetPos = Vector3.positiveInfinity; // reset
+                    entity.target = go.transform;
                 }
+                entity.pendingTargetPos = Vector3.positiveInfinity; // reset
+            }
 
             if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)
             {
                 entity.rb.velocity = Vector3.zero;
+                // Generic target toggle (mainTarget/home switching)
                 entity.SetTargetToggle();
+
+                // Behavior-specific effects
+                entity.behaviorHandler.OnTargetReached(entity, entity.taskList.GetCurrentTask());
+
+                ITask currTask = entity.taskList.GetCurrentTask();
+                if (currTask.IsComplete)
+                {
+                    entity.taskList.RemoveTask(currTask);
+                    task[count] = null;
+                }
+
                 continue;
             }
 
@@ -122,6 +158,11 @@ public class EntityMovementManager : MonoBehaviour
             {
                 entity.rb.velocity = Vector3.zero;
             }
+
+
+
+
+            count++;
         }
     }
 
