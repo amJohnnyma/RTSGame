@@ -37,7 +37,7 @@ public class Crafter : MonoBehaviour
     {
         foreach (var (item, count) in recipe)
         {
-            if (inventory.GetCount(item) <= count) return false;   
+            if (inventory.GetCount(item) < count) return false;   
         }
         return true;
     }
