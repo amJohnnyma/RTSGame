@@ -220,11 +220,28 @@ public class Harvest : ITask
 
     public void OnTargetReached(EntityRuntime entity, World world)
     {
+        string harvestItem = "Red_Flower";
+        int takeAmount = 1;
+        int giveAmount = 1;
+
+        switch (entity.behaviour)
+        {
+            case EntityBehaviour.SCOUT:
+                takeAmount = 1;
+                giveAmount = 1;
+                break;
+            case EntityBehaviour.HARVEST:
+                takeAmount = 10;
+                giveAmount = int.MaxValue;
+                break;
+            case EntityBehaviour.DEFAULT:
+                break;
+        }
         if (entity.returningHome)
         {
             // Arrived home → deliver items
             var homeInv = entity.home.GetComponent<Inventory>();
-            entity.GetComponent<Inventory>().GiveItemToOther("Red_Flower", int.MaxValue, homeInv);
+            entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
 
             // Pick next harvestable
             GameObject go = world.GetRandomFoundHarvestable();
@@ -250,9 +267,9 @@ public class Harvest : ITask
             var inv = entity.GetComponent<Inventory>();
             var targetInv = entity.mainTarget.GetComponent<EntityInventory>();
             Debug.Log("Harvest resource");
-            targetInv.GiveItemToOther("Red_Flower", 1, inv);
+            targetInv.GiveItemToOther(harvestItem, giveAmount, inv);
 
-            if (targetInv.IsEmpty("Red_Flower"))
+            if (targetInv.IsEmpty(harvestItem))
                 world.DestroyFoundHarvestable(entity.mainTarget.position);
 
             // Return home next
