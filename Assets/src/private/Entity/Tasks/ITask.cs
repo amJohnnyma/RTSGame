@@ -292,6 +292,163 @@ public class HarvestRandom : ITask
 
 }
 
+/*
+// Harvest the flower only once
+entity.taskList.AddTask(new HarvestSpecific(flower, cycles: 1));
+
+// Harvest the flower 5 times (5 full trips)
+entity.taskList.AddTask(new HarvestSpecific(flower, cycles: 5));
+
+// Collect exactly 30 resources (may take multiple trips)
+entity.taskList.AddTask(new HarvestSpecific(flower, targetAmount: 30));
+
+// Harvest until resource is empty (infinite)
+entity.taskList.AddTask(new HarvestSpecific(flower, infinite: true));
+*/
+public class HarvestSpecific : ITask
+{
+    public TaskType Type => TaskType.Harvest;
+    public Vector3 TargetPos { get; private set; }
+    public int Priority { get; private set; }
+    public bool IsComplete { get; private set; }
+    public bool HasStarted { get; private set; }
+
+    public bool SetHasStarted { set => HasStarted = value; }
+    public bool SetIsComplete { set => IsComplete = value; }
+
+    public EntityBehaviour EntityBehaviour => EntityBehaviour.HARVEST;
+
+    private GameObject specificTarget; 
+    private int remainingCycles;       // how many full trips (harvest + return)
+    private int collectedSoFar;        // track total resources taken
+    private int targetAmount;          // stop once this amount is collected
+    private bool infinite;             // keep going until resource is empty
+
+    public HarvestSpecific(GameObject target, int cycles = 1, int targetAmount = -1, bool infinite = false, int priority = 1)
+    {
+        specificTarget = target;
+        TargetPos = target.transform.position;
+        Priority = priority;
+        IsComplete = false;
+        HasStarted = false;
+
+        this.remainingCycles = cycles;
+        this.targetAmount = targetAmount;
+        this.infinite = infinite;
+        this.collectedSoFar = 0;
+    }
+
+    public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
+    {
+        if (!entity.returningHome && specificTarget != null)
+        {
+            entity.pendingTargetPos = specificTarget.transform.position;
+            TargetPos = entity.pendingTargetPos;
+        }
+
+        var nearbyPoints = EntityMovementManager.GetNearbyPoints(entityPos, entity.radius, entity.checkPoints);
+        entity.lastNearbyPoints = nearbyPoints;
+
+        float bestScore = float.MinValue;
+        int bestIdx = 0;
+        for (int j = 0; j < nearbyPoints.Length; j++)
+        {
+            float score = 1f / ((nearbyPoints[j] - TargetPos).sqrMagnitude + 0.001f);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestIdx = j;
+            }
+        }
+        entity.chosenScore = bestIdx;
+    }
+
+    public void OnTargetReached(EntityRuntime entity, World world)
+    {
+        string harvestItem = "Red_Flower";
+        int takeAmount = 1;
+        int giveAmount = 1;
+
+        switch (entity.behaviour)
+        {
+            case EntityBehaviour.SCOUT:
+                takeAmount = 1;
+                giveAmount = 1;
+                break;
+            case EntityBehaviour.HARVEST:
+                takeAmount = 10;
+                giveAmount = int.MaxValue;
+                break;
+        }
+
+        if (entity.returningHome)
+        {
+            // Deliver to home
+            var homeInv = entity.home.GetComponent<Inventory>();
+            int carried = takeAmount;
+            entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
+
+            // Count delivered
+            collectedSoFar += carried;
+
+            // Decide whether to stop
+            if (!infinite)
+            {
+                if (targetAmount > 0 && collectedSoFar >= targetAmount)
+                {
+                    IsComplete = true;
+                    return;
+                }
+                if (remainingCycles > 0)
+                {
+                    remainingCycles--;
+                    if (remainingCycles == 0)
+                    {
+                        IsComplete = true;
+                        return;
+                    }
+                }
+            }
+
+            // If target still exists, go again
+            if (specificTarget != null)
+            {
+                entity.mainTarget = specificTarget.transform;
+                entity.target = entity.mainTarget;
+                entity.returningHome = false;
+            }
+            else
+            {
+                IsComplete = true;
+            }
+        }
+        else
+        {
+            // Arrived at harvestable
+            if (specificTarget == null)
+            {
+                IsComplete = true;
+                return;
+            }
+
+            var inv = entity.GetComponent<Inventory>();
+            var targetInv = specificTarget.GetComponent<EntityInventory>();
+            targetInv.GiveItemToOther(harvestItem, giveAmount, inv);
+
+            if (targetInv.IsEmpty(harvestItem))
+            {
+                world.DestroyFoundHarvestable(specificTarget.transform.position);
+                specificTarget = null;
+            }
+
+            // Return home next
+            entity.target = entity.home;
+            entity.returningHome = true;
+        }
+    }
+}
+
+
 public class ReturnHome : ITask
 {
     public TaskType Type => TaskType.Home;
@@ -344,72 +501,72 @@ public class ReturnHome : ITask
     }
 
     public void OnTargetReached(EntityRuntime entity, World world)
-{
-    string harvestItem = "Red_Flower";
-    int takeAmount = 1;
-    int giveAmount = 1;
-
-    switch (entity.behaviour)
     {
-        case EntityBehaviour.SCOUT:
-            takeAmount = 1;
-            giveAmount = 1;
-            break;
-        case EntityBehaviour.HARVEST:
-            takeAmount = 10;
-            giveAmount = int.MaxValue;
-            break;
-        case EntityBehaviour.DEFAULT:
-            break;
-    }
+        string harvestItem = "Red_Flower";
+        int takeAmount = 1;
+        int giveAmount = 1;
 
-    if (entity.returningHome)
-    {
-        // Arrived home → deliver items
-        var homeInv = entity.home.GetComponent<Inventory>();
-        entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
-
-        if (!world.IsUnfoundHarvestables())
+        switch (entity.behaviour)
         {
-            // No work left → idle
-            entity.taskList.ClearTasks();
-            entity.taskList.AddTask(new IdleTask());
-            entity.rb.velocity = Vector3.zero;
-            return;
+            case EntityBehaviour.SCOUT:
+                takeAmount = 1;
+                giveAmount = 1;
+                break;
+            case EntityBehaviour.HARVEST:
+                takeAmount = 10;
+                giveAmount = int.MaxValue;
+                break;
+            case EntityBehaviour.DEFAULT:
+                break;
         }
 
-        // Otherwise pick next harvestable
-        GameObject go = world.GetRandomFoundHarvestable();
-        if (go != null)
+        if (entity.returningHome)
         {
-            entity.mainTarget = go.transform;
-            entity.target = entity.mainTarget;
-            entity.returningHome = false;
-        }
+            // Arrived home → deliver items
+            var homeInv = entity.home.GetComponent<Inventory>();
+            entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
 
-        IsComplete = true;
-    }
-    else
-    {
-        // (same as before, harvest logic…)
-        if (entity.mainTarget == entity.home)
+            if (!world.IsUnfoundHarvestables())
+            {
+                // No work left → idle
+                entity.taskList.ClearTasks();
+                entity.taskList.AddTask(new IdleTask());
+                entity.rb.velocity = Vector3.zero;
+                return;
+            }
+
+            // Otherwise pick next harvestable
+            GameObject go = world.GetRandomFoundHarvestable();
+            if (go != null)
+            {
+                entity.mainTarget = go.transform;
+                entity.target = entity.mainTarget;
+                entity.returningHome = false;
+            }
+
+            IsComplete = true;
+        }
+        else
         {
+            // (same as before, harvest logic…)
+            if (entity.mainTarget == entity.home)
+            {
+                entity.target = entity.home;
+                entity.returningHome = true;
+                return;
+            }
+
+            var inv = entity.GetComponent<Inventory>();
+            var targetInv = entity.mainTarget.GetComponent<EntityInventory>();
+            targetInv.GiveItemToOther(harvestItem, giveAmount, inv);
+
+            if (targetInv.IsEmpty(harvestItem))
+                world.DestroyFoundHarvestable(entity.mainTarget.position);
+
             entity.target = entity.home;
             entity.returningHome = true;
-            return;
         }
-
-        var inv = entity.GetComponent<Inventory>();
-        var targetInv = entity.mainTarget.GetComponent<EntityInventory>();
-        targetInv.GiveItemToOther(harvestItem, giveAmount, inv);
-
-        if (targetInv.IsEmpty(harvestItem))
-            world.DestroyFoundHarvestable(entity.mainTarget.position);
-
-        entity.target = entity.home;
-        entity.returningHome = true;
     }
-}
 
 
 }
