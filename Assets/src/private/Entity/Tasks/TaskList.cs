@@ -7,6 +7,7 @@ public class TaskList
 
     public void AddTask(ITask task) => _tasks.Add(task);
     public void RemoveTask(ITask task) => _tasks.Remove(task);
+    public void ClearTasks() => _tasks.Clear();
 
     public ITask? GetCurrentTask()
     {

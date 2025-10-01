@@ -7,6 +7,7 @@ public class EntityMovementManager : MonoBehaviour
     public List<EntityRuntime> entities = new();
 
     private World world;
+    private TaskCreator taskCreator;
 
     void Start()
     {
@@ -18,6 +19,8 @@ public class EntityMovementManager : MonoBehaviour
             entities.Add(i.GetComponent<EntityRuntime>());
 
         }
+
+        taskCreator = GetComponent<TaskCreator>();
     }
 
     void FixedUpdate()
@@ -32,25 +35,7 @@ public class EntityMovementManager : MonoBehaviour
         {
             positions[i] = entities[i].transform.position;      // main thread copy
             targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
-            task[i] = entities[i].taskList.GetCurrentTask();
-             if (task[i] == null)
-            {
-                switch (entities[i].behaviour)
-                {
-                    case EntityBehaviour.SCOUT:
-                        task[i] = new Scout(targetPositions[i], 9);
-                        break;
-                    case EntityBehaviour.HARVEST:
-                        task[i] = new Harvest(targetPositions[i], 9);
-                        break;
-                    case EntityBehaviour.DEFAULT:
-                        task[i] = new Scout(targetPositions[i], 9);
-                        break;
-                }
-
-                entities[i].taskList.AddTask(task[i]);
-
-            }
+            task[i] = taskCreator.CreateTask(entities[i]); // and assign to entity if needed
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
         Parallel.For(0, entities.Count, i =>
@@ -77,17 +62,45 @@ public class EntityMovementManager : MonoBehaviour
 
             if (!world.IsUnfoundHarvestables())
             {
+                //   entity.rb.velocity = Vector3.zero;
+                count++;
+
+                ITask current = entity.taskList.GetCurrentTask();
+                if (current == null || current.Type != TaskType.Home && current.Type != TaskType.Idle)
+                {
+                    taskCreator.CreateTask(TaskType.Home, "ReturnHome", entity);
+                }
+
+                if (current.Type == TaskType.Idle)
+                {
+                    entity.rb.velocity = Vector3.zero;
+                    continue;
+                }
+
+                //   continue;
+            }
+            else
+            {
+                // if they are currently idle then stop that task
+                ITask current = entity.taskList.GetCurrentTask();
+                if (current == null)
+                {
+                    break;
+                }
+                if (current.Type == TaskType.Idle)
+                {
+                    current.SetIsComplete = true;
+                }
+            }
+            
+
+            if (entity.target == null)
+            {
+                entity.target = entity.home;
                 entity.rb.velocity = Vector3.zero;
                 count++;
                 continue;
             }
-            if (entity.target == null)
-                {
-                    entity.target = entity.home;
-                    entity.rb.velocity = Vector3.zero;
-                    count++;
-                    continue;
-                }
             if (entity.mainTarget == null)
             {
                 entity.mainTarget = entity.home;

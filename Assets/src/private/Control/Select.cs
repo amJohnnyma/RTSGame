@@ -80,6 +80,8 @@ public class Select : MonoBehaviour
             else
             {
                 Debug.Log("None");
+                // default as select
+                SelectEntity();
             }
         }
         if (canBuild || canDestroy || isSelecting)
@@ -280,7 +282,7 @@ public class Select : MonoBehaviour
     }
     private void SelectEntity()
     {
-        if (!isSelecting || selectionUIDisplayed)
+        if (/*!isSelecting ||*/ selectionUIDisplayed)
         {
             //  selectionUIDisplayed = false;
             return;

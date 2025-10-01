@@ -15,6 +15,7 @@ public interface ITask
 {
     TaskType Type { get; }
     Vector3 TargetPos { get; }
+    EntityBehaviour EntityBehaviour { get; }
     int Priority { get; }
     bool IsComplete { get; }
     bool HasStarted { get; }
@@ -30,7 +31,8 @@ public interface ITask
     
 }
 
-public class Scout : ITask
+// find resources
+public class ScoutResources : ITask
 {
     public TaskType Type => TaskType.Scout;
     public Vector3 TargetPos { get; private set; }
@@ -42,7 +44,9 @@ public class Scout : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public Scout(Vector3 target, int priority = 1)
+    public EntityBehaviour EntityBehaviour => EntityBehaviour.SCOUT;
+
+    public ScoutResources(Vector3 target, int priority = 1)
     {
         TargetPos = target;
         Priority = priority;
@@ -54,7 +58,7 @@ public class Scout : ITask
     {
 
 
-        
+
         if (!entity.returningHome && world.GetFoundHarvestable(targetPos))
         {
             // Current target is stale, force scout to re-pick
@@ -88,6 +92,8 @@ public class Scout : ITask
                 }
             }
         }
+
+        
 
 
         // --- Step 2: Movement scoring (still parallel safe) ---
@@ -142,15 +148,16 @@ public class Scout : ITask
         }
 
 
-        
+
     }
 
 
 }
 
-public class Harvest : ITask
+// just harvest whatever you want
+public class HarvestRandom : ITask
 {
-    public TaskType Type => TaskType.Scout;
+    public TaskType Type => TaskType.Harvest;
     public Vector3 TargetPos { get; private set; }
     public int Priority { get; private set; }
     public bool IsComplete { get; private set; }
@@ -160,7 +167,9 @@ public class Harvest : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public Harvest(Vector3 target, int priority = 1)
+    public EntityBehaviour EntityBehaviour => EntityBehaviour.HARVEST;
+
+    public HarvestRandom(Vector3 target, int priority = 1)
     {
         TargetPos = target;
         Priority = priority;
@@ -170,6 +179,8 @@ public class Harvest : ITask
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
+
+
 
 
         if (!entity.returningHome)
@@ -279,4 +290,151 @@ public class Harvest : ITask
     }
 
 
+}
+
+public class ReturnHome : ITask
+{
+    public TaskType Type => TaskType.Home;
+    public Vector3 TargetPos { get; private set; }
+    public int Priority { get; private set; }
+    public bool IsComplete { get; private set; }
+    public bool HasStarted { get; private set; }
+
+
+    public bool SetHasStarted { set => HasStarted = value; }
+    public bool SetIsComplete { set => IsComplete = value; }
+
+    public EntityBehaviour EntityBehaviour => EntityBehaviour.DEFAULT;
+
+    public ReturnHome(Vector3 target, int priority = 1)
+    {
+        TargetPos = target;
+        Priority = priority;
+        IsComplete = false;
+        HasStarted = false;
+    }
+
+    public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
+    {
+
+        entity.returningHome = true;
+
+        // this will be set to home on creation
+        //  entity.pendingTargetPos = TargetPos;
+
+        // --- Step 2: Movement scoring (still parallel safe) ---
+        var nearbyPoints = EntityMovementManager.GetNearbyPoints(entityPos, entity.radius, entity.checkPoints);
+        entity.lastNearbyPoints = nearbyPoints;
+
+        float bestScore = float.MinValue;
+        int bestIdx = 0;
+        for (int j = 0; j < nearbyPoints.Length; j++)
+        {
+            float score = 1f / ((nearbyPoints[j] - targetPos).sqrMagnitude + 0.001f);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestIdx = j;
+            }
+        }
+
+        entity.chosenScore = bestIdx;
+
+
+    }
+
+    public void OnTargetReached(EntityRuntime entity, World world)
+{
+    string harvestItem = "Red_Flower";
+    int takeAmount = 1;
+    int giveAmount = 1;
+
+    switch (entity.behaviour)
+    {
+        case EntityBehaviour.SCOUT:
+            takeAmount = 1;
+            giveAmount = 1;
+            break;
+        case EntityBehaviour.HARVEST:
+            takeAmount = 10;
+            giveAmount = int.MaxValue;
+            break;
+        case EntityBehaviour.DEFAULT:
+            break;
+    }
+
+    if (entity.returningHome)
+    {
+        // Arrived home → deliver items
+        var homeInv = entity.home.GetComponent<Inventory>();
+        entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
+
+        if (!world.IsUnfoundHarvestables())
+        {
+            // No work left → idle
+            entity.taskList.ClearTasks();
+            entity.taskList.AddTask(new IdleTask());
+            entity.rb.velocity = Vector3.zero;
+            return;
+        }
+
+        // Otherwise pick next harvestable
+        GameObject go = world.GetRandomFoundHarvestable();
+        if (go != null)
+        {
+            entity.mainTarget = go.transform;
+            entity.target = entity.mainTarget;
+            entity.returningHome = false;
+        }
+
+        IsComplete = true;
+    }
+    else
+    {
+        // (same as before, harvest logic…)
+        if (entity.mainTarget == entity.home)
+        {
+            entity.target = entity.home;
+            entity.returningHome = true;
+            return;
+        }
+
+        var inv = entity.GetComponent<Inventory>();
+        var targetInv = entity.mainTarget.GetComponent<EntityInventory>();
+        targetInv.GiveItemToOther(harvestItem, giveAmount, inv);
+
+        if (targetInv.IsEmpty(harvestItem))
+            world.DestroyFoundHarvestable(entity.mainTarget.position);
+
+        entity.target = entity.home;
+        entity.returningHome = true;
+    }
+}
+
+
+}
+
+public class IdleTask : ITask
+{
+    public TaskType Type => TaskType.Idle;
+    public Vector3 TargetPos => Vector3.zero;
+    public int Priority => 0;
+    public bool IsComplete { get; private set; }
+    public bool HasStarted { get; private set; }
+    public EntityBehaviour EntityBehaviour => EntityBehaviour.DEFAULT;
+
+    public bool SetHasStarted { set => HasStarted = value; }
+    public bool SetIsComplete { set => IsComplete = value; }
+
+    public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
+    {
+        // Do nothing
+     //   entity.rb.velocity = Vector3.zero;
+    }
+
+    public void OnTargetReached(EntityRuntime entity, World world)
+    {
+        // Stay idle
+         IsComplete = false;
+    }
 }
