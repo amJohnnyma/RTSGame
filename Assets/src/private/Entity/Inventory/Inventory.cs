@@ -196,6 +196,7 @@ public abstract class Inventory : MonoBehaviour
 
     public ItemSO GetFirstItem()
     {
+        if (Items.Count() <= 0) return null;
         return Items.Keys.ToList()[0] == null ? null : Items.Keys.ToList()[0];
     }
     public ItemSO GetFirstItemExcluding(ItemSO item, int depth = 0)

@@ -76,14 +76,13 @@ public class TaskCreator : MonoBehaviour
     {
         foreach (ITask t in taskList)
         {
-            if (entity.behaviour == t.EntityBehaviour)
+       
+            if (t.Priority < curTask.Priority)
             {
-                if (t.Priority < curTask.Priority)
-                {
-                    return t;
-                }
-
+                return t;
             }
+
+            
         }
 
         return curTask;

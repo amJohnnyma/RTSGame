@@ -15,7 +15,6 @@ public interface ITask
 {
     TaskType Type { get; }
     Vector3 TargetPos { get; }
-    EntityBehaviour EntityBehaviour { get; }
     int Priority { get; }
     bool IsComplete { get; }
     bool HasStarted { get; }
@@ -27,7 +26,7 @@ public interface ITask
 
     void OnTargetReached(EntityRuntime entity, World world);
 
-    public string GetTaskDetails();
+    public string GetTaskDetails(EntityRuntime e);
 
 
     
@@ -46,7 +45,6 @@ public class ScoutResources : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public EntityBehaviour EntityBehaviour => EntityBehaviour.SCOUT;
 
     public ScoutResources(Vector3 target, int priority = 1)
     {
@@ -153,10 +151,10 @@ public class ScoutResources : ITask
 
     }
 
-    public string GetTaskDetails()
+    public string GetTaskDetails(EntityRuntime e)
     {
         string typeString = Type.ToString() ?? "none";
-        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: ScoutResources";
         return text;
     }
@@ -176,7 +174,6 @@ public class HarvestRandom : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public EntityBehaviour EntityBehaviour => EntityBehaviour.HARVEST;
 
     public HarvestRandom(Vector3 target, int priority = 1)
     {
@@ -298,10 +295,11 @@ public class HarvestRandom : ITask
         }
     }
 
-    public string GetTaskDetails()
+    public string GetTaskDetails(EntityRuntime e)
     {
         string typeString = Type.ToString() ?? "none";
-        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+
+        string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: HarvestRandom";
         return text;
     }
@@ -332,7 +330,6 @@ public class HarvestSpecific : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public EntityBehaviour EntityBehaviour => EntityBehaviour.HARVEST;
 
     private GameObject specificTarget; 
     private int remainingCycles;       // how many full trips (harvest + return)
@@ -462,10 +459,10 @@ public class HarvestSpecific : ITask
             entity.returningHome = true;
         }
     }
-    public string GetTaskDetails()
+    public string GetTaskDetails(EntityRuntime e)
     {
         string typeString = Type.ToString() ?? "none";
-        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: HarvestSpecific";
         return text;
     }
@@ -484,7 +481,6 @@ public class ReturnHome : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
-    public EntityBehaviour EntityBehaviour => EntityBehaviour.DEFAULT;
 
     public ReturnHome(Vector3 target, int priority = 1)
     {
@@ -591,10 +587,10 @@ public class ReturnHome : ITask
         }
     }
 
-    public string GetTaskDetails()
+    public string GetTaskDetails(EntityRuntime e)
     {
         string typeString = Type.ToString() ?? "none";
-        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: ReturnHome";
         return text;
     }
@@ -608,7 +604,6 @@ public class IdleTask : ITask
     public int Priority => 0;
     public bool IsComplete { get; private set; }
     public bool HasStarted { get; private set; }
-    public EntityBehaviour EntityBehaviour => EntityBehaviour.DEFAULT;
 
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
@@ -624,10 +619,10 @@ public class IdleTask : ITask
         // Stay idle
          IsComplete = false;
     }
-    public string GetTaskDetails()
+    public string GetTaskDetails(EntityRuntime e)
     {
         string typeString = Type.ToString() ?? "none";
-        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: IdleTask";
         return text;
     }
