@@ -6,12 +6,13 @@ public class EntityMovementManager : MonoBehaviour
 {
     public List<EntityRuntime> entities = new();
 
-    private World world;
     private TaskCreator taskCreator;
+
+    private bool updatedToZeroFlag = false;
+
 
     void Start()
     {
-        world = GetComponent<World>();
         //temporary
         GameObject[] e = GameObject.FindGameObjectsWithTag("EntityMoveable");
         foreach (var i in e)
@@ -23,8 +24,21 @@ public class EntityMovementManager : MonoBehaviour
         taskCreator = GetComponent<TaskCreator>();
     }
 
-    void FixedUpdate()
+    public void EntityPausedMovement()
     {
+        if (updatedToZeroFlag) return;
+        foreach (var i in entities)
+        {
+            i.rb.velocity = Vector3.zero;
+        }
+        updatedToZeroFlag = true;
+    }
+    
+
+
+    public void EntityMovementUpdates(World world)
+    {
+        updatedToZeroFlag = false;
         world.RefreshHarvestableCache();
 
         Vector3[] positions = new Vector3[entities.Count];
@@ -35,6 +49,7 @@ public class EntityMovementManager : MonoBehaviour
         {
             positions[i] = entities[i].transform.position;      // main thread copy
             targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
+            // default task to be assigned
             task[i] = taskCreator.CreateTask(entities[i]); // and assign to entity if needed
         }
         // --- Phase 1: Parallel computation of next tangent direction ---
@@ -44,7 +59,7 @@ public class EntityMovementManager : MonoBehaviour
             if (targetPositions[i] == null) targetPositions[i] = positions[i];
 
             entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i], task[i]);
-            
+
 
 
         });
@@ -92,7 +107,7 @@ public class EntityMovementManager : MonoBehaviour
                     current.SetIsComplete = true;
                 }
             }
-            
+
 
             if (entity.target == null)
             {
@@ -105,7 +120,7 @@ public class EntityMovementManager : MonoBehaviour
             {
                 entity.mainTarget = entity.home;
                 entity.rb.velocity = Vector3.zero;
-                                count++;
+                count++;
 
                 continue;
             }
@@ -187,6 +202,7 @@ public class EntityMovementManager : MonoBehaviour
             count++;
         }
     }
+
 
     // --- Utility: Fibonacci sphere sampling ---
         public static Vector3[] GetNearbyPoints(Vector3 pos, float radius, int samples)

@@ -23,6 +23,8 @@ public class World : MonoBehaviour
 
 
     private GameObject sphere;
+    private EntityMovementManager entityMovementManager;
+    private bool entitiesPaused = false;
     private EntitySpawner spawner;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
@@ -50,9 +52,25 @@ public class World : MonoBehaviour
         spawner.SpawnOnTerrain(meshFilter.sharedMesh, this.gameObject.transform, this);
         //Track all spawned harvestables
 
+
         // add buildings
         AddBuildingsFromPlaced();
 
+        entityMovementManager = GetComponent<EntityMovementManager>();
+
+    }
+
+    void FixedUpdate()
+    {
+        if (!entitiesPaused)
+        {
+            entityMovementManager.EntityMovementUpdates(this);
+
+        }
+        else
+        {
+            entityMovementManager.EntityPausedMovement();
+        }
     }
 
 
@@ -115,10 +133,10 @@ public class World : MonoBehaviour
         try
         {
 
-            placedEntities.Add(key,go);
+            placedEntities.Add(key, go);
 
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Debug.Log(e);
 
@@ -129,11 +147,11 @@ public class World : MonoBehaviour
         {
             try
             {
-                buildings.Add(key,go);
+                buildings.Add(key, go);
 
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.Log(e);
 
@@ -145,7 +163,7 @@ public class World : MonoBehaviour
     {
         Destroy(placedEntities[key]);
         placedEntities.Remove(key);
-     //   Debug.Log("Destroy at " + key.ToString());
+        //   Debug.Log("Destroy at " + key.ToString());
 
     }
     public GameObject GetPlacedEntity(Vector3 key)
@@ -213,38 +231,38 @@ public class World : MonoBehaviour
         return selected; // null if none exist
     }
 
-public bool IsUnfoundHarvestables()
-{
-    List<Vector3> toRemove = new List<Vector3>();
-
-    foreach (var kvp in placedEntities)
+    public bool IsUnfoundHarvestables()
     {
-        if (kvp.Value == null)
-        {
-            // Mark destroyed object for removal
-            toRemove.Add(kvp.Key);
-            continue;
-        }
+        List<Vector3> toRemove = new List<Vector3>();
 
-        var stats = kvp.Value.GetComponent<EntityStats>();
-        if (stats != null && stats.type == Type.HARVESTABLE)
+        foreach (var kvp in placedEntities)
         {
-            // Only consider harvestables not yet found
-            if (GetFoundHarvestable(kvp.Key) == null)
+            if (kvp.Value == null)
             {
-                return true;
+                // Mark destroyed object for removal
+                toRemove.Add(kvp.Key);
+                continue;
+            }
+
+            var stats = kvp.Value.GetComponent<EntityStats>();
+            if (stats != null && stats.type == Type.HARVESTABLE)
+            {
+                // Only consider harvestables not yet found
+                if (GetFoundHarvestable(kvp.Key) == null)
+                {
+                    return true;
+                }
             }
         }
-    }
 
-    // Remove destroyed objects from the dictionary
-    foreach (var key in toRemove)
-    {
-        placedEntities.Remove(key);
-    }
+        // Remove destroyed objects from the dictionary
+        foreach (var key in toRemove)
+        {
+            placedEntities.Remove(key);
+        }
 
-    return false;
-}
+        return false;
+    }
 
     public GameObject GetRandomFoundHarvestable()
     {
@@ -271,14 +289,16 @@ public bool IsUnfoundHarvestables()
     public void AddFoundHarvestable(Vector3 key, GameObject go)
     {
 
-        try {
-        foundHarvestables.Add(key, go);
+        try
+        {
+            foundHarvestables.Add(key, go);
 
-        } catch (Exception e) { Debug.Log(e); }
+        }
+        catch (Exception e) { Debug.Log(e); }
 
         Debug.Log("Harvestable added at " + key.ToString());
 
-        
+
 
     }
 
@@ -343,7 +363,7 @@ public bool IsUnfoundHarvestables()
                 {
                     buildings.Add(k, v);
 
-            
+
                 }
                 catch (Exception e)
                 {
@@ -351,6 +371,14 @@ public bool IsUnfoundHarvestables()
                 }
             }
         }
+    }
+
+
+
+    public void ToggleWorldPause()
+    {
+        entitiesPaused = !entitiesPaused;
+
     }
 
     

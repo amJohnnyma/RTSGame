@@ -14,7 +14,12 @@ public class InputManager : MonoBehaviour
     public List<InputBinding> bindings;
 
     public BuildMenu buildMenu;
-    
+    private World world;
+
+    void Start()
+    {
+        world = GetComponent<World>();
+    }
 
     void Update()
     {
@@ -52,6 +57,9 @@ public class InputManager : MonoBehaviour
                 break;
             case "toggleSM": //select mode
                 buildMenu.ToggleSelectMode();
+                break;
+            case "togglePauseWorld":
+                world.ToggleWorldPause();
                 break;
             case null:
                 break;
