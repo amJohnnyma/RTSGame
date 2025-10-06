@@ -8,6 +8,7 @@ TagManager:
   - EntityMoveable
   - EntitySelectable
   - World
+  - WorldController
   layers:
   - Default
   - TransparentFX

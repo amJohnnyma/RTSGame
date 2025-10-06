@@ -23,8 +23,6 @@ public class World : MonoBehaviour
 
 
     private GameObject sphere;
-    private EntityMovementManager entityMovementManager;
-    private bool entitiesPaused = false;
     private EntitySpawner spawner;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
@@ -33,9 +31,16 @@ public class World : MonoBehaviour
     private IcosphereGenerator icoSphereGen = new IcosphereGenerator();
     private IcosphereTerrain terrain;
 
+    // tracking all entities
     public Dictionary<Vector3, GameObject> placedEntities = new();
     private Dictionary<Vector3, GameObject> foundHarvestables = new();
     private Dictionary<Vector3, GameObject> buildings = new();
+    private List<Crafter> crafters;
+    private List<ConveyorBelt> conveyers;
+    private EntityMovementManager entityMovementManager;
+    private bool worldPaused = false;
+
+    
 
 
     private void OnValidate()
@@ -57,14 +62,28 @@ public class World : MonoBehaviour
         AddBuildingsFromPlaced();
 
         entityMovementManager = GetComponent<EntityMovementManager>();
+        crafters = UnityEngine.Object.FindObjectsByType<Crafter>(FindObjectsSortMode.None).ToList();
+        conveyers = UnityEngine.Object.FindObjectsByType<ConveyorBelt>(FindObjectsSortMode.None).ToList();
 
     }
 
     void FixedUpdate()
     {
-        if (!entitiesPaused)
+        if (!worldPaused)
         {
+
+            // make this into parallel
             entityMovementManager.EntityMovementUpdates(this);
+
+            foreach (var c in crafters)
+            {
+                c.CraftUpdate();
+            }
+
+            foreach (var c in conveyers)
+            {
+                c.ConveyerUpdate();
+            }
 
         }
         else
@@ -377,7 +396,7 @@ public class World : MonoBehaviour
 
     public void ToggleWorldPause()
     {
-        entitiesPaused = !entitiesPaused;
+        worldPaused = !worldPaused;
 
     }
 

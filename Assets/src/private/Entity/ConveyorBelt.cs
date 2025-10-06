@@ -27,6 +27,7 @@ public class ConveyorBelt : MonoBehaviour
     private Vector3 startPos;
     private Vector3 endPos;
 
+
     void Start()
     {
         // Store endpoints for fast lookup
@@ -44,11 +45,14 @@ public class ConveyorBelt : MonoBehaviour
             lr.SetPosition(1, endPos);
         }
 
-        if(provider)
+        if (provider)
             provider.inUse = true;
+
     }
 
-    void FixedUpdate()
+
+// IF HERE NOT DONE -> MAKE PARALLEL SAFE
+    public void ConveyerUpdate()
     {
         // pull from provider if available
         if (provider != null)

@@ -8,12 +8,14 @@ public class Crafter : MonoBehaviour
 
     public ItemSO craft;
 
+
     void Start()
     {
         inventory = GetComponent<Inventory>();
     }
 
-    void FixedUpdate()
+// IF HERE NOT DONE -> MAKE PARALLEL SAFE
+    public void CraftUpdate()
     {
         if(craft != null)
             CraftItem(craft);
