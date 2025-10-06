@@ -91,7 +91,8 @@ public class EntityStats : MonoBehaviour
     public List<Attack> attacks;
     public List<DefenseType> defences;
     private Crafter crafter;
-    
+    private EntityRuntime entityRuntime = null;
+
 
 
     void Awake()
@@ -99,6 +100,12 @@ public class EntityStats : MonoBehaviour
         this.gameObject.tag = eTag;
         Crafter c = GetComponent<Crafter>();
         if (c != null) crafter = c;
+
+        EntityRuntime eR = GetComponent<EntityRuntime>();
+        if (eR != null)
+        {
+            entityRuntime = eR;
+        }
 
     }
     public bool ActivateUI(VisualElement root, VisualTreeAsset itemTemplate)
@@ -141,13 +148,20 @@ public class EntityStats : MonoBehaviour
             craftRoot.style.display = DisplayStyle.None;
 
         }
-        namelbl.text = this.ToString();
+        string text = this.ToString();
+        if (entityRuntime != null)
+        {
+            text += "\n" + entityRuntime.taskList.GetCurrentTask().GetTaskDetails();
+        }
+        namelbl.text = text;
         return true;
 
     }
     public bool DeactivateUI(VisualElement root)
     {
         root.style.display = DisplayStyle.None;
+        Label namelbl = root.Q<Label>("nameLbl");
+        namelbl.text = "null";
         return false; // not displayed anymore
 
     }

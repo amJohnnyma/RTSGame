@@ -27,6 +27,8 @@ public interface ITask
 
     void OnTargetReached(EntityRuntime entity, World world);
 
+    public string GetTaskDetails();
+
 
     
 }
@@ -151,6 +153,13 @@ public class ScoutResources : ITask
 
     }
 
+    public string GetTaskDetails()
+    {
+        string typeString = Type.ToString() ?? "none";
+        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: ScoutResources";
+        return text;
+    }
 
 }
 
@@ -289,6 +298,13 @@ public class HarvestRandom : ITask
         }
     }
 
+    public string GetTaskDetails()
+    {
+        string typeString = Type.ToString() ?? "none";
+        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: HarvestRandom";
+        return text;
+    }
 
 }
 
@@ -446,6 +462,13 @@ public class HarvestSpecific : ITask
             entity.returningHome = true;
         }
     }
+    public string GetTaskDetails()
+    {
+        string typeString = Type.ToString() ?? "none";
+        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: HarvestSpecific";
+        return text;
+    }
 }
 
 
@@ -568,6 +591,13 @@ public class ReturnHome : ITask
         }
     }
 
+    public string GetTaskDetails()
+    {
+        string typeString = Type.ToString() ?? "none";
+        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: ReturnHome";
+        return text;
+    }
 
 }
 
@@ -593,5 +623,12 @@ public class IdleTask : ITask
     {
         // Stay idle
          IsComplete = false;
+    }
+    public string GetTaskDetails()
+    {
+        string typeString = Type.ToString() ?? "none";
+        string entityBehaviourString = EntityBehaviour.ToString() ?? "none";
+        string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: IdleTask";
+        return text;
     }
 }
