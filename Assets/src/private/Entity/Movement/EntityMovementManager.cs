@@ -6,6 +6,7 @@ public class EntityMovementManager : MonoBehaviour
 {
     public List<EntityRuntime> entities = new();
 
+// make default tasks if needed
     private TaskCreator taskCreator;
 
     private bool updatedToZeroFlag = false;

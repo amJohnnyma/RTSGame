@@ -549,7 +549,7 @@ public class ReturnHome : ITask
             {
                 // No work left → idle
                 entity.taskList.ClearTasks();
-                entity.taskList.AddTask(new IdleTask());
+                entity.taskList.AddTask(new IdleTask(9)); // low prio
                 entity.rb.velocity = Vector3.zero;
                 return;
             }
@@ -601,17 +601,23 @@ public class IdleTask : ITask
 {
     public TaskType Type => TaskType.Idle;
     public Vector3 TargetPos => Vector3.zero;
-    public int Priority => 0;
+    public int Priority  {    get; private set;}
     public bool IsComplete { get; private set; }
     public bool HasStarted { get; private set; }
 
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public IdleTask(int priority)
+    {
+        Priority = priority;
+    }
+    
+
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
         // Do nothing
-     //   entity.rb.velocity = Vector3.zero;
+        //   entity.rb.velocity = Vector3.zero;
     }
 
     public void OnTargetReached(EntityRuntime entity, World world)

@@ -40,6 +40,8 @@ public class World : MonoBehaviour
     private EntityMovementManager entityMovementManager;
     private bool worldPaused = false;
 
+    private TaskCreator taskCreator; // get a reference to the creator
+
     
 
 
@@ -64,6 +66,7 @@ public class World : MonoBehaviour
         entityMovementManager = GetComponent<EntityMovementManager>();
         crafters = UnityEngine.Object.FindObjectsByType<Crafter>(FindObjectsSortMode.None).ToList();
         conveyers = UnityEngine.Object.FindObjectsByType<ConveyorBelt>(FindObjectsSortMode.None).ToList();
+        taskCreator = GetComponent<TaskCreator>();
 
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
 public class TaskCreator : MonoBehaviour
@@ -8,39 +9,102 @@ public class TaskCreator : MonoBehaviour
     [SerializeField] private World world; // reference world -> Which planet are we one
     [SerializeField] private GameObject home; // Which home are we returning to?
 
-    private List<ITask> taskList = new();
+    private TaskList taskList = new TaskList();
 
 // create a task for this entity
     public void CreateTask(TaskType type, string specialization, EntityRuntime entity)
-{
-    if (type == TaskType.Home)
     {
-        var current = entity.taskList.GetCurrentTask();
-        if (current == null || current.Type != TaskType.Home)
+        if (type == TaskType.Home)
         {
-            ITask task = new ReturnHome(entity.home.transform.position, 1);
-            entity.target = entity.home;
-            entity.mainTarget = entity.home;
-            entity.taskList.ClearTasks(); 
-            entity.taskList.AddTask(task);
+            var current = entity.taskList.GetCurrentTask();
+            if (current == null || current.Type != TaskType.Home)
+            {
+                ITask task = new ReturnHome(entity.home.transform.position, 9);
+                entity.target = entity.home;
+                entity.mainTarget = entity.home;
+                entity.taskList.ClearTasks(); 
+                entity.taskList.AddTask(task);
+            }
+        }
+        else if (type == TaskType.Idle)
+        {
+            var current = entity.taskList.GetCurrentTask();
+            if (current == null || current.Type != TaskType.Idle)
+            {
+                ITask task = new IdleTask(9);
+                entity.taskList.ClearTasks();
+                entity.taskList.AddTask(task);
+            }
+        }
+        else if (type == TaskType.Scout)
+        {
+        }
+        else if (type == TaskType.Harvest)
+        {
+        }
+        else if (type == TaskType.Attack)
+        {
         }
     }
-    else if (type == TaskType.Idle)
-    {
-        var current = entity.taskList.GetCurrentTask();
-        if (current == null || current.Type != TaskType.Idle)
-        {
-            ITask task = new IdleTask();
-            entity.taskList.ClearTasks();
-            entity.taskList.AddTask(task);
-        }
-    }
-    else
-    {
-        // ... other tasks like Scout/Harvest
-    }
-}
 
+// add tasks to this list
+    public void CreateTask(TaskType type, string specialization, GameObject position, int priority)
+    {
+        if (type == TaskType.Home)
+        {
+            ITask task = new ReturnHome(position.transform.position, priority);
+            taskList.AddTask(task);
+        }
+        else if (type == TaskType.Idle)
+        {
+            ITask task = new IdleTask(priority);
+            taskList.AddTask(task);
+        }
+        else if (type == TaskType.Scout)
+        {
+            ITask task = null;
+            switch (specialization)
+            {
+                case "resources":
+                    task = new ScoutResources(position.transform.position, priority);
+                    taskList.AddTask(task);
+                    break;
+
+                default:
+                    task = new ScoutResources(position.transform.position, priority);
+                    taskList.AddTask(task);
+                    break;
+
+            }
+        }
+        else if (type == TaskType.Harvest)
+        {
+            ITask task = null;
+            switch (specialization)
+            {
+                case "random":
+                    task = new HarvestRandom(position.transform.position, priority);
+                    taskList.AddTask(task);
+                    break;
+
+                case "specific":
+                    task = new HarvestSpecific(target :position, priority : priority);
+                    taskList.AddTask(task);
+                    break;
+
+                default:
+                    task = new HarvestRandom(position.transform.position, priority);
+                    taskList.AddTask(task);
+                    break;
+
+            }
+        }
+        else if (type == TaskType.Attack)
+        {
+        }
+    }
+
+    // getter and 'setter' to make default tasks
     public ITask CreateTask(EntityRuntime entity)
     {
         ITask task = entity.taskList.GetCurrentTask();
@@ -62,6 +126,10 @@ public class TaskCreator : MonoBehaviour
 
 
         }
+        else
+        {
+            return task; // they have a task so return it
+        }
 
         // else check if the priority is the lowest of this task
         ITask bestTask = GetLowestPriority(entity, task);
@@ -74,16 +142,15 @@ public class TaskCreator : MonoBehaviour
 
     private ITask GetLowestPriority(EntityRuntime entity, ITask curTask)
     {
-        foreach (ITask t in taskList)
+        ITask lowestInList = taskList.GetCurrentTask();
+        if (lowestInList == null) return curTask;
+        if (lowestInList.Priority < curTask.Priority)
         {
-       
-            if (t.Priority < curTask.Priority)
-            {
-                return t;
-            }
+            return lowestInList;
+        }
 
             
-        }
+        
 
         return curTask;
     }
