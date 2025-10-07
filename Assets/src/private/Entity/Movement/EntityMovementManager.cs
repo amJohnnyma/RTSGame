@@ -46,6 +46,9 @@ public class EntityMovementManager : MonoBehaviour
         Vector3[] targetPositions = new Vector3[entities.Count];
         ITask[] task = new ITask[entities.Count];
 
+   //     taskCreator.AssignAvailableTasksToIdleEntities(entities);
+
+
         for (int i = 0; i < entities.Count; i++)
         {
             positions[i] = entities[i].transform.position;      // main thread copy
@@ -69,13 +72,14 @@ public class EntityMovementManager : MonoBehaviour
         // --- Phase 2: Main thread - raycast to terrain and move Rigidbody ---
         foreach (var entity in entities)
         {
+
             if (entity.rb == null)
             {
                 count++;
                 continue;
             }
 
-
+            
             if (!world.IsUnfoundHarvestables())
             {
                 //   entity.rb.velocity = Vector3.zero;
@@ -262,3 +266,84 @@ public static class EntitySpatialUtils
     }
 
 }
+
+/*
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class EntityMovementManager : MonoBehaviour
+{
+    public List<EntityRuntime> entities = new();
+    private TaskCreator taskCreator;
+    private bool paused = false;
+
+    void Start()
+    {
+        taskCreator = GetComponent<TaskCreator>();
+        foreach (var go in GameObject.FindGameObjectsWithTag("EntityMoveable"))
+            entities.Add(go.GetComponent<EntityRuntime>());
+    }
+
+    public void EntityMovementUpdates(World world)
+    {
+        paused = false;
+        world.RefreshHarvestableCache();
+
+        foreach (var entity in entities)
+        {
+            ITask current = entity.taskList.GetCurrentTask();
+
+            // 1️⃣ Need new task?
+            if (current == null || current.IsComplete)
+            {
+                if (current != null)
+                    entity.taskList.RemoveTask(current);
+
+                // Try get from global queue first
+                ITask newTask = taskCreator.GlobalTasks.PopNextTask();
+
+                if (newTask == null)
+                {
+                    // Fallback: auto-create based on behaviour
+                    newTask = CreateDefaultTask(entity);
+                }
+
+                if (newTask != null)
+                {
+                    entity.taskList.AddTask(newTask);
+                    entity.SetTaskTargets(newTask);
+                    Debug.Log($"[EntityMovementManager] {entity.name} assigned new {newTask.Type}");
+                }
+            }
+
+            // 2️⃣ Perform movement
+            HandleEntityMovement(entity, world);
+        }
+    }
+
+    private ITask CreateDefaultTask(EntityRuntime entity)
+    {
+        return entity.behaviour switch
+        {
+            EntityBehaviour.SCOUT => new ScoutResources(Vector3.zero, 1),
+            EntityBehaviour.HARVEST => new HarvestRandom(Vector3.zero, 1),
+            _ => new IdleTask(1)
+        };
+    }
+
+    private void HandleEntityMovement(EntityRuntime entity, World world)
+    {
+        ITask task = entity.taskList.GetCurrentTask();
+        if (task == null) return;
+
+        if (entity.target == null)
+            entity.SetTaskTargets(task);
+
+        // Reuse your movement + OnTargetReached logic here
+        entity.behaviorHandler.ComputeMove(entity, entity.transform.position, entity.target.position, task);
+        // then all your terrain/raycast movement updates follow
+    }
+}
+
+*/

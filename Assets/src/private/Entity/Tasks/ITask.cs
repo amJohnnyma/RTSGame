@@ -6,7 +6,8 @@ public enum TaskType
     Harvest,
     Attack,
     Idle,
-    Home
+    Home,
+    GoTo
 }
 
 
@@ -555,6 +556,8 @@ public class ReturnHome : ITask
 
         if (entity.returningHome)
         {
+            if(HomePos != null)
+                entity.home = HomePos;
             // Arrived home → deliver items
             var homeInv = entity.home.GetComponent<Inventory>();
             entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
@@ -653,5 +656,63 @@ public class IdleTask : ITask
         string entityBehaviourString = e.behaviour.ToString() ?? "none";
         string text = "Task: " + typeString + "\tEntityBehaviour: " + entityBehaviourString + "\tSpecific: IdleTask";
         return text;
+    }
+}
+
+public class GoToTask : ITask
+{
+    public TaskType Type => TaskType.GoTo;
+    public Vector3 TargetPos { get; private set; }
+    public int Priority { get; private set; }
+    public bool IsComplete { get; private set; }
+    public bool HasStarted { get; private set; }
+
+    public bool SetHasStarted { set => HasStarted = value; }
+    public bool SetIsComplete { set => IsComplete = value; }
+    public Transform HomePos { get; set; }
+
+    public GoToTask(Vector3 targetPos, int priority = 5)
+    {
+        TargetPos = targetPos;
+        Priority = priority;
+        IsComplete = false;
+        HasStarted = false;
+    }
+
+    public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
+    {
+        // --- Compute movement (same pattern as ReturnHome) ---
+        var nearbyPoints = EntityMovementManager.GetNearbyPoints(entityPos, entity.radius, entity.checkPoints);
+        entity.lastNearbyPoints = nearbyPoints;
+
+        float bestScore = float.MinValue;
+        int bestIdx = 0;
+
+        for (int j = 0; j < nearbyPoints.Length; j++)
+        {
+            float score = 1f / ((nearbyPoints[j] - TargetPos).sqrMagnitude + 0.001f);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestIdx = j;
+            }
+        }
+
+        entity.chosenScore = bestIdx;
+    }
+
+    public void OnTargetReached(EntityRuntime entity, World world)
+    {
+        IsComplete = true;
+        entity.rb.velocity = Vector3.zero;
+
+        // Optionally set entity to idle
+        entity.taskList.ClearTasks();
+        entity.taskList.AddTask(new IdleTask(9));
+    }
+
+    public string GetTaskDetails(EntityRuntime e)
+    {
+        return $"Task: {Type}\tEntityBehaviour: {e.behaviour}\tTarget: {TargetPos}";
     }
 }
