@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
+// the task itself needs to specify the target, and return point
 public class TaskCreator : MonoBehaviour
 {
 
     [SerializeField] private World world; // reference world -> Which planet are we one
-    [SerializeField] private GameObject home; // Which home are we returning to?
 
-    private TaskList taskList = new TaskList();
+    public TaskList taskList = new TaskList();
 
 // create a task for this entity
     public void CreateTask(TaskType type, string specialization, EntityRuntime entity)
@@ -47,17 +47,20 @@ public class TaskCreator : MonoBehaviour
         }
     }
 
-// add tasks to this list
-    public void CreateTask(TaskType type, string specialization, GameObject position, int priority)
+    // add tasks to this list
+    public void CreateTask(TaskType type, string specialization, GameObject position, GameObject returnPoint, int priority)
     {
+        Debug.Log("Creating task: " + type);
         if (type == TaskType.Home)
         {
-            ITask task = new ReturnHome(position.transform.position, priority);
+            ITask task = new ReturnHome(returnPoint.transform.position, priority);
+            task.SetHomePos = returnPoint.transform;
             taskList.AddTask(task);
         }
         else if (type == TaskType.Idle)
         {
             ITask task = new IdleTask(priority);
+            task.SetHomePos = returnPoint.transform;
             taskList.AddTask(task);
         }
         else if (type == TaskType.Scout)
@@ -67,11 +70,13 @@ public class TaskCreator : MonoBehaviour
             {
                 case "resources":
                     task = new ScoutResources(position.transform.position, priority);
+                    task.SetHomePos = returnPoint.transform;
                     taskList.AddTask(task);
                     break;
 
                 default:
                     task = new ScoutResources(position.transform.position, priority);
+                    task.SetHomePos = returnPoint.transform;
                     taskList.AddTask(task);
                     break;
 
@@ -84,16 +89,19 @@ public class TaskCreator : MonoBehaviour
             {
                 case "random":
                     task = new HarvestRandom(position.transform.position, priority);
+                    task.SetHomePos = returnPoint.transform;
                     taskList.AddTask(task);
                     break;
 
                 case "specific":
-                    task = new HarvestSpecific(target :position, priority : priority);
+                    task = new HarvestSpecific(target: position, priority: priority);
+                    task.SetHomePos = returnPoint.transform;
                     taskList.AddTask(task);
                     break;
 
                 default:
                     task = new HarvestRandom(position.transform.position, priority);
+                    task.SetHomePos = returnPoint.transform;
                     taskList.AddTask(task);
                     break;
 
@@ -102,6 +110,8 @@ public class TaskCreator : MonoBehaviour
         else if (type == TaskType.Attack)
         {
         }
+        Debug.Log("Created task: " + type);
+        Debug.Log("Count: " + taskList.GetTaskCount());
     }
 
     // getter and 'setter' to make default tasks
@@ -128,16 +138,37 @@ public class TaskCreator : MonoBehaviour
         }
         else
         {
-            return task; // they have a task so return it
+            IdleTask idleTask = task as IdleTask;
+            // not idle so we can just continue
+            if (idleTask == null)
+            {
+                return task;
+            }
+            // is idle so lets check if it is completed
+            if (idleTask.IsIdling)
+            {
+            //    idleTask.SetIsComplete = true;
+                //    entity.taskList.RemoveTask(task); // we have completed it so remove it from the list
+                //  CreateTask(entity); // retry
+              // continue to find a better task
+            }
         }
+        // now try and assign the values
 
         // else check if the priority is the lowest of this task
         ITask bestTask = GetLowestPriority(entity, task);
         // only add the task if needed
         entity.taskList.AddTask(bestTask);
 
+        taskList.RemoveTask(bestTask);
+
         return bestTask;
 
+    }
+
+    public void AddTask(ITask task)
+    {
+        taskList.AddTask(task);
     }
 
     private ITask GetLowestPriority(EntityRuntime entity, ITask curTask)
@@ -149,8 +180,8 @@ public class TaskCreator : MonoBehaviour
             return lowestInList;
         }
 
-            
-        
+
+
 
         return curTask;
     }

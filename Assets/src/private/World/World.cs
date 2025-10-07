@@ -42,7 +42,7 @@ public class World : MonoBehaviour
 
     private TaskCreator taskCreator; // get a reference to the creator
 
-    
+
 
 
     private void OnValidate()
@@ -401,6 +401,12 @@ public class World : MonoBehaviour
     {
         worldPaused = !worldPaused;
 
+    }
+
+
+    public void AddTask(ITask task)
+    {
+        taskCreator.AddTask(task);
     }
 
     

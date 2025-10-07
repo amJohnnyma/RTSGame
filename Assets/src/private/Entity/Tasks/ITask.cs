@@ -15,12 +15,15 @@ public interface ITask
 {
     TaskType Type { get; }
     Vector3 TargetPos { get; }
+    Transform HomePos { get; set; }
     int Priority { get; }
     bool IsComplete { get; }
     bool HasStarted { get; }
 
     bool SetHasStarted { set; }
     bool SetIsComplete { set; }
+
+    public Transform SetHomePos { set => HomePos = value; }
 
     void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius);
 
@@ -45,6 +48,7 @@ public class ScoutResources : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public Transform HomePos {get;  set;}
 
     public ScoutResources(Vector3 target, int priority = 1)
     {
@@ -52,6 +56,7 @@ public class ScoutResources : ITask
         Priority = priority;
         IsComplete = false;
         HasStarted = false;
+
     }
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
@@ -143,6 +148,8 @@ public class ScoutResources : ITask
         else
         {
             // Arrived at target (harvestable), go home next
+            if(HomePos != null)
+                entity.home = HomePos;
             entity.target = entity.home;
             entity.returningHome = true;
         }
@@ -174,6 +181,7 @@ public class HarvestRandom : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public Transform HomePos {get; set;}
 
     public HarvestRandom(Vector3 target, int priority = 1)
     {
@@ -290,6 +298,8 @@ public class HarvestRandom : ITask
                 world.DestroyFoundHarvestable(entity.mainTarget.position);
 
             // Return home next
+            if(HomePos != null)
+                entity.home = HomePos;
             entity.target = entity.home;
             entity.returningHome = true;
         }
@@ -330,6 +340,7 @@ public class HarvestSpecific : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public Transform HomePos {get; set;}
 
     private GameObject specificTarget; 
     private int remainingCycles;       // how many full trips (harvest + return)
@@ -455,6 +466,8 @@ public class HarvestSpecific : ITask
             }
 
             // Return home next
+            if(HomePos != null)
+                entity.home = HomePos;
             entity.target = entity.home;
             entity.returningHome = true;
         }
@@ -481,6 +494,7 @@ public class ReturnHome : ITask
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public Transform HomePos { get; set; }
 
     public ReturnHome(Vector3 target, int priority = 1)
     {
@@ -582,6 +596,8 @@ public class ReturnHome : ITask
             if (targetInv.IsEmpty(harvestItem))
                 world.DestroyFoundHarvestable(entity.mainTarget.position);
 
+            if(HomePos != null)
+                entity.home = HomePos;
             entity.target = entity.home;
             entity.returningHome = true;
         }
@@ -604,13 +620,17 @@ public class IdleTask : ITask
     public int Priority  {    get; private set;}
     public bool IsComplete { get; private set; }
     public bool HasStarted { get; private set; }
+    public bool IsIdling { get; private set; }
 
     public bool SetHasStarted { set => HasStarted = value; }
     public bool SetIsComplete { set => IsComplete = value; }
 
+    public Transform HomePos { get; set; }
+
     public IdleTask(int priority)
     {
         Priority = priority;
+        Debug.Log("Created IDLE");
     }
     
 
@@ -618,12 +638,14 @@ public class IdleTask : ITask
     {
         // Do nothing
         //   entity.rb.velocity = Vector3.zero;
+        entity.home = HomePos;
     }
 
     public void OnTargetReached(EntityRuntime entity, World world)
     {
         // Stay idle
-         IsComplete = false;
+        IsComplete = false;
+        IsIdling = true; // we are at the target but dont complete the task
     }
     public string GetTaskDetails(EntityRuntime e)
     {

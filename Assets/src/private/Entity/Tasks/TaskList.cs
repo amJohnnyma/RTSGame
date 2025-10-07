@@ -15,4 +15,9 @@ public class TaskList
 
         return _tasks.OrderByDescending(t => t.Priority).First();
     }
+
+    public int GetTaskCount()
+    {
+        return _tasks.Count;
+    }
 }
