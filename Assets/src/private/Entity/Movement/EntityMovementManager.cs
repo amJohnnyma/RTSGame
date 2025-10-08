@@ -6,7 +6,7 @@ public class EntityMovementManager : MonoBehaviour
 {
     public List<EntityRuntime> entities = new();
 
-// make default tasks if needed
+    // make default tasks if needed
     private TaskCreator taskCreator;
 
     private bool updatedToZeroFlag = false;
@@ -34,7 +34,7 @@ public class EntityMovementManager : MonoBehaviour
         }
         updatedToZeroFlag = true;
     }
-    
+
 
 
     public void EntityMovementUpdates(World world)
@@ -46,27 +46,15 @@ public class EntityMovementManager : MonoBehaviour
         Vector3[] targetPositions = new Vector3[entities.Count];
         ITask[] task = new ITask[entities.Count];
 
-   //     taskCreator.AssignAvailableTasksToIdleEntities(entities);
+        // parallel data
+        CreateEntityLists(positions, targetPositions, task);
+
+        //Assign tasks to entities without
+
+        // compute parallel movement
+        ComputeParallelMovement(entities, positions, targetPositions, task);
 
 
-        for (int i = 0; i < entities.Count; i++)
-        {
-            positions[i] = entities[i].transform.position;      // main thread copy
-            targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
-            // default task to be assigned
-            task[i] = taskCreator.CreateTask(entities[i]); // and assign to entity if needed
-        }
-        // --- Phase 1: Parallel computation of next tangent direction ---
-        Parallel.For(0, entities.Count, i =>
-        {
-            var entity = entities[i];
-            if (targetPositions[i] == null) targetPositions[i] = positions[i];
-
-            entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i], task[i]);
-
-
-
-        });
 
         int count = 0;
         // --- Phase 2: Main thread - raycast to terrain and move Rigidbody ---
@@ -79,7 +67,7 @@ public class EntityMovementManager : MonoBehaviour
                 continue;
             }
 
-            
+
             if (!world.IsUnfoundHarvestables())
             {
                 //   entity.rb.velocity = Vector3.zero;
@@ -210,24 +198,50 @@ public class EntityMovementManager : MonoBehaviour
 
 
     // --- Utility: Fibonacci sphere sampling ---
-        public static Vector3[] GetNearbyPoints(Vector3 pos, float radius, int samples)
+    public static Vector3[] GetNearbyPoints(Vector3 pos, float radius, int samples)
+    {
+        Vector3[] points = new Vector3[samples];
+        float phi = Mathf.PI * (3f - Mathf.Sqrt(5f));
+
+        for (int i = 0; i < samples; i++)
         {
-            Vector3[] points = new Vector3[samples];
-            float phi = Mathf.PI * (3f - Mathf.Sqrt(5f));
-
-            for (int i = 0; i < samples; i++)
-            {
-                float y = 1f - (i / (float)(samples - 1)) * 2f;
-                float r = Mathf.Sqrt(1 - y * y);
-                float theta = phi * i;
-                float x = Mathf.Cos(theta) * r;
-                float z = Mathf.Sin(theta) * r;
-                points[i] = pos + new Vector3(x, y, z) * radius;
-            }
-
-            return points;
+            float y = 1f - (i / (float)(samples - 1)) * 2f;
+            float r = Mathf.Sqrt(1 - y * y);
+            float theta = phi * i;
+            float x = Mathf.Cos(theta) * r;
+            float z = Mathf.Sin(theta) * r;
+            points[i] = pos + new Vector3(x, y, z) * radius;
         }
 
+        return points;
+    }
+
+    void CreateEntityLists(Vector3[] positions, Vector3[] targetPositions, ITask[] task)
+    {
+        for (int i = 0; i < entities.Count; i++)
+        {
+            positions[i] = entities[i].transform.position;      // main thread copy
+            targetPositions[i] = entities[i].target == null ? entities[i].home.transform.position : entities[i].target.transform.position;   // main thread copy
+            // default task to be assigned
+            task[i] = taskCreator.CreateTask(entities[i]); // and assign to entity if needed
+        }
+
+    }
+
+    void ComputeParallelMovement(List<EntityRuntime> entities,Vector3[] positions, Vector3[] targetPositions, ITask[] task)
+    {
+        Parallel.For(0, entities.Count, i =>
+        {
+            var entity = entities[i];
+            if (targetPositions[i] == null) targetPositions[i] = positions[i];
+
+            entity.behaviorHandler.ComputeMove(entity, positions[i], targetPositions[i], task[i]);
+
+
+
+        });
+
+    }
 
 }
 
@@ -265,85 +279,5 @@ public static class EntitySpatialUtils
         return nearby;
     }
 
+
 }
-
-/*
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
-
-public class EntityMovementManager : MonoBehaviour
-{
-    public List<EntityRuntime> entities = new();
-    private TaskCreator taskCreator;
-    private bool paused = false;
-
-    void Start()
-    {
-        taskCreator = GetComponent<TaskCreator>();
-        foreach (var go in GameObject.FindGameObjectsWithTag("EntityMoveable"))
-            entities.Add(go.GetComponent<EntityRuntime>());
-    }
-
-    public void EntityMovementUpdates(World world)
-    {
-        paused = false;
-        world.RefreshHarvestableCache();
-
-        foreach (var entity in entities)
-        {
-            ITask current = entity.taskList.GetCurrentTask();
-
-            // 1️⃣ Need new task?
-            if (current == null || current.IsComplete)
-            {
-                if (current != null)
-                    entity.taskList.RemoveTask(current);
-
-                // Try get from global queue first
-                ITask newTask = taskCreator.GlobalTasks.PopNextTask();
-
-                if (newTask == null)
-                {
-                    // Fallback: auto-create based on behaviour
-                    newTask = CreateDefaultTask(entity);
-                }
-
-                if (newTask != null)
-                {
-                    entity.taskList.AddTask(newTask);
-                    entity.SetTaskTargets(newTask);
-                    Debug.Log($"[EntityMovementManager] {entity.name} assigned new {newTask.Type}");
-                }
-            }
-
-            // 2️⃣ Perform movement
-            HandleEntityMovement(entity, world);
-        }
-    }
-
-    private ITask CreateDefaultTask(EntityRuntime entity)
-    {
-        return entity.behaviour switch
-        {
-            EntityBehaviour.SCOUT => new ScoutResources(Vector3.zero, 1),
-            EntityBehaviour.HARVEST => new HarvestRandom(Vector3.zero, 1),
-            _ => new IdleTask(1)
-        };
-    }
-
-    private void HandleEntityMovement(EntityRuntime entity, World world)
-    {
-        ITask task = entity.taskList.GetCurrentTask();
-        if (task == null) return;
-
-        if (entity.target == null)
-            entity.SetTaskTargets(task);
-
-        // Reuse your movement + OnTargetReached logic here
-        entity.behaviorHandler.ComputeMove(entity, entity.transform.position, entity.target.position, task);
-        // then all your terrain/raycast movement updates follow
-    }
-}
-
-*/
