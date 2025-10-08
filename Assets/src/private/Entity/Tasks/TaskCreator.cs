@@ -200,3 +200,136 @@ public class TaskCreator : MonoBehaviour
 }
 
 
+/* Potential logic fix from chat
+
+public ITask CreateTask(EntityRuntime entity)
+{
+    // 1. Check entity current task
+    ITask currentTask = entity.taskList.GetCurrentTask();
+
+    // 2. Try pulling from global task list if entity has none
+    if (currentTask == null)
+        currentTask = taskList.GetCurrentTask();
+
+    // 3. Handle idle cleanup
+    if (currentTask is IdleTask idle)
+    {
+        if (taskList.GetTaskCount() > 0 || entity.world.IsUnfoundHarvestables())
+        {
+            idle.SetIsComplete = true;
+            entity.taskList.RemoveTask(idle);
+            currentTask = null; // allow new assignment
+        }
+    }
+
+    // 4. Assign default task only if no global task
+    if (currentTask == null)
+    {
+        if (taskList.GetTaskCount() > 0)
+        {
+            // Take the first available global task
+            currentTask = taskList.GetCurrentTask();
+            taskList.RemoveTask(currentTask);
+        }
+        else
+        {
+            // No global tasks, assign default based on behaviour
+            switch (entity.behaviour)
+            {
+                case EntityBehaviour.SCOUT:
+                    currentTask = new ScoutResources(Vector3.zero, 0);
+                    break;
+                case EntityBehaviour.HARVEST:
+                    currentTask = new HarvestRandom(Vector3.zero, 0);
+                    break;
+                case EntityBehaviour.DEFAULT:
+                    currentTask = new ScoutResources(Vector3.zero, 0);
+                    break;
+            }
+        }
+    }
+
+    // 5. Assign home reference if applicable
+    if (entity.home != null)
+        currentTask.SetHomePos = entity.home;
+
+    // 6. Assign to entity task list
+    entity.taskList.AddTask(currentTask);
+
+    return currentTask;
+}
+
+
+bool AssignEntityTasks(EntityRuntime entity, World world)
+{
+    ITask current = entity.taskList.GetCurrentTask();
+
+    // --- Clean up finished tasks ---
+    if (current != null && current.IsComplete)
+    {
+        entity.taskList.RemoveTask(current);
+        current = null;
+    }
+
+    bool hasHarvestables = world.IsUnfoundHarvestables();
+    bool hasGlobalTasks = taskCreator.taskList.GetTaskCount() > 0;
+    bool isAtHome = entity.IsAtHome();
+
+    // --- CASE 1: Global tasks available ---
+    if (hasGlobalTasks)
+    {
+        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
+        {
+            // Take a task from the global list
+            taskCreator.CreateTask(entity);
+            return true;
+        }
+        return false; // already working on a non-idle task
+    }
+
+    // --- CASE 2: Harvestables exist but no global tasks ---
+    if (hasHarvestables)
+    {
+        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
+        {
+            // Assign default harvest/scout task
+            taskCreator.CreateTask(entity);
+            return true;
+        }
+        return false; // already doing something
+    }
+
+    // --- CASE 3: No global tasks and no harvestables ---
+    if (!hasHarvestables && !hasGlobalTasks)
+    {
+        if (isAtHome)
+        {
+            if (current == null || current.Type != TaskType.Idle)
+            {
+                taskCreator.CreateTaskForEntity(TaskType.Idle, "IdleHome", entity);
+                return true;
+            }
+            return false; // already idling
+        }
+        else
+        {
+            if (current == null || current.Type != TaskType.Home)
+            {
+                if (entity.home != null)
+                {
+                    taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
+                    return true;
+                }
+                Debug.LogWarning($"Entity {entity.name} has no home assigned, cannot return home.");
+                return false;
+            }
+            return false; // already returning home
+        }
+    }
+
+    return false;
+}
+
+
+
+*/
