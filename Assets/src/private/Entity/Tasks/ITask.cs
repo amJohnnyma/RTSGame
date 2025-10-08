@@ -53,6 +53,8 @@ public class ScoutResources : ITask
 
     public ScoutResources(Vector3 target, int priority = 1)
     {
+                        Debug.Log("scout resources task");
+
         TargetPos = target;
         Priority = priority;
         IsComplete = false;
@@ -126,7 +128,12 @@ public class ScoutResources : ITask
         if (entity.returningHome)
         {
             // Arrived home, now pick next target harvestable or wander
-            EntityStats nextHarvestable = world.GetRandomPlacedHarvestable().GetComponent<EntityStats>();
+            GameObject go = world.GetRandomPlacedHarvestable();
+            if (go == null)
+            {
+                return;
+            }
+            EntityStats nextHarvestable = go.GetComponent<EntityStats>();
             if (nextHarvestable != null)
             {
                 entity.mainTarget = nextHarvestable.transform;
@@ -186,6 +193,8 @@ public class HarvestRandom : ITask
 
     public HarvestRandom(Vector3 target, int priority = 1)
     {
+                        Debug.Log("harvest random task");
+
         TargetPos = target;
         Priority = priority;
         IsComplete = false;
@@ -351,6 +360,8 @@ public class HarvestSpecific : ITask
 
     public HarvestSpecific(GameObject target, int cycles = 1, int targetAmount = -1, bool infinite = false, int priority = 1)
     {
+                Debug.Log("harvest specific task");
+
         specificTarget = target;
         TargetPos = target.transform.position;
         Priority = priority;
@@ -499,6 +510,7 @@ public class ReturnHome : ITask
 
     public ReturnHome(Vector3 target, int priority = 1)
     {
+        Debug.Log("Returning home task");
         TargetPos = target;
         Priority = priority;
         IsComplete = false;
@@ -507,6 +519,7 @@ public class ReturnHome : ITask
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
+
 
         entity.returningHome = true;
 
@@ -556,29 +569,9 @@ public class ReturnHome : ITask
 
         if (entity.returningHome)
         {
-            if(HomePos != null)
+            if (HomePos != null)
                 entity.home = HomePos;
-            // Arrived home → deliver items
-            var homeInv = entity.home.GetComponent<Inventory>();
-            entity.GetComponent<Inventory>().GiveItemToOther(harvestItem, takeAmount, homeInv);
 
-            if (!world.IsUnfoundHarvestables())
-            {
-                // No work left → idle
-                entity.taskList.ClearTasks();
-                entity.taskList.AddTask(new IdleTask(9)); // low prio
-                entity.rb.velocity = Vector3.zero;
-                return;
-            }
-
-            // Otherwise pick next harvestable
-            GameObject go = world.GetRandomFoundHarvestable();
-            if (go != null)
-            {
-                entity.mainTarget = go.transform;
-                entity.target = entity.mainTarget;
-                entity.returningHome = false;
-            }
 
             IsComplete = true;
         }
@@ -599,7 +592,7 @@ public class ReturnHome : ITask
             if (targetInv.IsEmpty(harvestItem))
                 world.DestroyFoundHarvestable(entity.mainTarget.position);
 
-            if(HomePos != null)
+            if (HomePos != null)
                 entity.home = HomePos;
             entity.target = entity.home;
             entity.returningHome = true;
@@ -647,7 +640,8 @@ public class IdleTask : ITask
     public void OnTargetReached(EntityRuntime entity, World world)
     {
         // Stay idle
-        IsComplete = false;
+        entity.rb.velocity = Vector3.zero;
+      //  IsComplete = false;
         IsIdling = true; // we are at the target but dont complete the task
     }
     public string GetTaskDetails(EntityRuntime e)
@@ -699,6 +693,9 @@ public class GoToTask : ITask
         }
 
         entity.chosenScore = bestIdx;
+
+        entity.pendingTargetPos = nearbyPoints[bestIdx];
+
     }
 
     public void OnTargetReached(EntityRuntime entity, World world)
@@ -707,8 +704,8 @@ public class GoToTask : ITask
         entity.rb.velocity = Vector3.zero;
 
         // Optionally set entity to idle
-        entity.taskList.ClearTasks();
-        entity.taskList.AddTask(new IdleTask(9));
+    //    entity.taskList.ClearTasks();
+   //     entity.taskList.AddTask(new IdleTask(9));
     }
 
     public string GetTaskDetails(EntityRuntime e)

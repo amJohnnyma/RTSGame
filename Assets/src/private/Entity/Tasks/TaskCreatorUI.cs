@@ -19,7 +19,7 @@ public class TaskCreatorUI : MonoBehaviour
     public void Start()
     {
        // createButton.onClick.AddListener(OnCreateTaskClicked);
-      //  taskCreator = GetComponent<TaskCreator>();
+        taskCreator = GetComponent<TaskCreator>();
     }
 
     void Update()

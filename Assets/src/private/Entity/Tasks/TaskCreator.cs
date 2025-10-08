@@ -124,6 +124,59 @@ public class TaskCreator : MonoBehaviour
 
     // getter and 'setter' to make default tasks
     public ITask CreateTask(EntityRuntime entity)
+{
+    // 1. Get current task
+    ITask task = entity.taskList.GetCurrentTask();
+
+    // 2. Try pulling from global list if entity has none
+    if (task == null)
+        task = taskList.GetCurrentTask();
+
+    // 3. Handle idle cleanup
+    if (task is IdleTask idle)
+    {
+        // If entity is idling and new tasks exist, clear idle
+        if (taskList.GetTaskCount() > 0 || entity.world.IsUnfoundHarvestables())
+        {
+            idle.SetIsComplete = true;
+            entity.taskList.RemoveTask(idle);
+            task = null; // allow replacement
+        }
+    }
+
+    // 4. Create new default task if needed
+    if (task == null)
+    {
+        switch (entity.behaviour)
+        {
+            case EntityBehaviour.SCOUT:
+                task = new ScoutResources(Vector3.zero, 9);
+                break;
+            case EntityBehaviour.HARVEST:
+                task = new HarvestRandom(Vector3.zero, 9);
+                break;
+            case EntityBehaviour.DEFAULT:
+                task = new ScoutResources(Vector3.zero, 9);
+                break;
+        }
+    }
+
+    // 5. Assign home reference if applicable
+    if (entity.home != null)
+        task.SetHomePos = entity.home;
+
+    // 6. Choose best available task based on priority
+    ITask bestTask = GetLowestPriority(entity, task);
+
+    // 7. Add to entity task list, remove from global if necessary
+    entity.taskList.AddTask(bestTask);
+    taskList.RemoveTask(bestTask);
+
+    return bestTask;
+}
+
+    /*
+    public ITask CreateTask(EntityRuntime entity)
     {
         ITask task = entity.taskList.GetCurrentTask();
         if (task == null)
@@ -160,12 +213,13 @@ public class TaskCreator : MonoBehaviour
             else if (idleTask.IsIdling)
             {
                 idleTask.SetIsComplete = true;
-                entity.taskList.ClearTasks(); // we have completed it so remove it from the list
-                CreateTask(entity); // retry
-                                                    // continue to find a better task
+                //    entity.taskList.ClearTasks(); // we have completed it so remove it from the list
+                //    CreateTask(entity); // retry
+                // continue to find a better task
             }
         }
         // now try and assign the values
+        task.SetHomePos = entity.home;
 
         // else check if the priority is the lowest of this task
         ITask bestTask = GetLowestPriority(entity, task);
@@ -177,6 +231,7 @@ public class TaskCreator : MonoBehaviour
         return bestTask;
 
     }
+    */
 
     public void AddTask(ITask task)
     {

@@ -260,47 +260,69 @@ public class EntityMovementManager : MonoBehaviour
     }
 
     bool AssignEntityTasks(EntityRuntime entity, World world)
+{
+    ITask current = entity.taskList.GetCurrentTask();
+
+    // --- Clean up finished tasks ---
+    if (current != null && current.IsComplete)
     {
-        // Check if the entity currently has a task
-        ITask current = entity.taskList.GetCurrentTask();
+        entity.taskList.RemoveTask(current);
+        current = null;
+    }
 
-        //  Complete & clean up old task 
-        if (current != null && current.IsComplete)
-        {
-            entity.taskList.RemoveTask(current);
-            current = null;
-        }
+    bool hasHarvestables = world.IsUnfoundHarvestables();
+    bool hasOtherTasks = taskCreator.taskList.GetTaskCount() > 0;
+    bool isAtHome = entity.IsAtHome();
 
-        // No available harvestables
-        if (!world.IsUnfoundHarvestables())
-        {
-            // No tasks to do → ensure entity goes home and idles
-            if (current == null || (current.Type != TaskType.Home && current.Type != TaskType.Idle))
-            {
-                taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
-                return true;
-            }
-
-            // If currently idling, just stop movement
-            if (current.Type == TaskType.Idle)
-            {
-                entity.rb.velocity = Vector3.zero;
-                return true;
-            }
-
-            return false;
-        }
-
-        // If we get here, there *are* harvestables
-        if (current == null)
+    // --- If there are tasks or harvestables available, take them ---
+    if (hasHarvestables || hasOtherTasks)
+    {
+        // Leave idle or home immediately
+        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
         {
             taskCreator.CreateTask(entity);
             return true;
         }
 
-        // Task still valid, no reassignment needed
+        return false; // already has a valid working task
+    }
+
+    // --- If no harvestables and no global tasks ---
+    if (!hasHarvestables && !hasOtherTasks)
+    {
+        // If already home
+        if (isAtHome)
+        {
+            
+            // Stay idle if already idling
+                if (current != null && current.Type == TaskType.Idle)
+                    return false;
+
+            // Otherwise, assign idle task
+            taskCreator.CreateTaskForEntity(TaskType.Idle, "IdleHome", entity);
+            return true;
+        }
+
+        // Not home yet → go home first
+        if (current == null || current.Type != TaskType.Home)
+        {
+            if (entity.home != null)
+            {
+                taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
+                return true;
+            }
+
+            Debug.LogWarning($"Entity {entity.name} has no home assigned, cannot return home.");
+            return false;
+        }
+
+        // Currently returning home
         return false;
     }
+
+    return false;
+}
+
 
 
 }

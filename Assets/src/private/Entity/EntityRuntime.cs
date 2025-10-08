@@ -127,6 +127,11 @@ public class EntityRuntime : MonoBehaviour
 
     }
 
+    public bool IsAtHome()
+    {
+        return Vector3.Distance(transform.position, home.transform.position) < stopFollowDist;
+    }
+
     /*
 public void SetTaskTargets(ITask task)
 {
