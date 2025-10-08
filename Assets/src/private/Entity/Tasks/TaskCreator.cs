@@ -12,7 +12,7 @@ public class TaskCreator : MonoBehaviour
     public TaskList taskList = new TaskList();
 
     // create a task for this entity
-    public void CreateTask(TaskType type, string specialization, EntityRuntime entity)
+    public void CreateTaskForEntity(TaskType type, string specialization, EntityRuntime entity)
     {
         if (type == TaskType.Home)
         {
@@ -131,40 +131,40 @@ public class TaskCreator : MonoBehaviour
             task = taskList.GetCurrentTask();
         }
         if (task == null) // entity doesnt have any tasks // and no tasks available
+        {
+            // else assign a default task
+            switch (entity.behaviour)
             {
-                // else assign a default task
-                switch (entity.behaviour)
-                {
-                    case EntityBehaviour.SCOUT:
-                        task = new ScoutResources(Vector3.zero, 9);
-                        break;
-                    case EntityBehaviour.HARVEST:
-                        task = new HarvestRandom(Vector3.zero, 9);
-                        break;
-                    case EntityBehaviour.DEFAULT:
-                        task = new ScoutResources(Vector3.zero, 9);
-                        break;
-                }
-
-
+                case EntityBehaviour.SCOUT:
+                    task = new ScoutResources(Vector3.zero, 9);
+                    break;
+                case EntityBehaviour.HARVEST:
+                    task = new HarvestRandom(Vector3.zero, 9);
+                    break;
+                case EntityBehaviour.DEFAULT:
+                    task = new ScoutResources(Vector3.zero, 9);
+                    break;
             }
-            else
+
+
+        }
+        else
+        {
+            IdleTask idleTask = task as IdleTask;
+            // not idle so we can just continue
+            if (idleTask == null)
             {
-                IdleTask idleTask = task as IdleTask;
-                // not idle so we can just continue
-                if (idleTask == null)
-                {
-                    return task;
-                }
-                // is idle so lets check if it is completed
-                if (idleTask.IsIdling)
-                {
-                    idleTask.SetIsComplete = true;
+                // break out and get the best task
+            }
+            // is idle so lets check if it is completed
+            else if (idleTask.IsIdling)
+            {
+                idleTask.SetIsComplete = true;
                 entity.taskList.ClearTasks(); // we have completed it so remove it from the list
-                    CreateTask(entity); // retry
-                                                      // continue to find a better task
-                }
+                CreateTask(entity); // retry
+                                                    // continue to find a better task
             }
+        }
         // now try and assign the values
 
         // else check if the priority is the lowest of this task
