@@ -19,7 +19,7 @@ public class TaskCreator : MonoBehaviour
             var current = entity.taskList.GetCurrentTask();
             if (current == null || current.Type != TaskType.Home)
             {
-                ITask task = new ReturnHome(entity.home.transform.position, 9);
+                ITask task = new ReturnHome(entity.home.transform.position, 0);
                 entity.target = entity.home;
                 entity.mainTarget = entity.home;
                 entity.taskList.ClearTasks();
@@ -150,13 +150,13 @@ public class TaskCreator : MonoBehaviour
         switch (entity.behaviour)
         {
             case EntityBehaviour.SCOUT:
-                task = new ScoutResources(Vector3.zero, 9);
+                task = new ScoutResources(Vector3.zero, 0);
                 break;
             case EntityBehaviour.HARVEST:
-                task = new HarvestRandom(Vector3.zero, 9);
+                task = new HarvestRandom(Vector3.zero, 0);
                 break;
             case EntityBehaviour.DEFAULT:
-                task = new ScoutResources(Vector3.zero, 9);
+                task = new ScoutResources(Vector3.zero, 0);
                 break;
         }
     }
@@ -175,63 +175,7 @@ public class TaskCreator : MonoBehaviour
     return bestTask;
 }
 
-    /*
-    public ITask CreateTask(EntityRuntime entity)
-    {
-        ITask task = entity.taskList.GetCurrentTask();
-        if (task == null)
-        {
-            task = taskList.GetCurrentTask();
-        }
-        if (task == null) // entity doesnt have any tasks // and no tasks available
-        {
-            // else assign a default task
-            switch (entity.behaviour)
-            {
-                case EntityBehaviour.SCOUT:
-                    task = new ScoutResources(Vector3.zero, 9);
-                    break;
-                case EntityBehaviour.HARVEST:
-                    task = new HarvestRandom(Vector3.zero, 9);
-                    break;
-                case EntityBehaviour.DEFAULT:
-                    task = new ScoutResources(Vector3.zero, 9);
-                    break;
-            }
 
-
-        }
-        else
-        {
-            IdleTask idleTask = task as IdleTask;
-            // not idle so we can just continue
-            if (idleTask == null)
-            {
-                // break out and get the best task
-            }
-            // is idle so lets check if it is completed
-            else if (idleTask.IsIdling)
-            {
-                idleTask.SetIsComplete = true;
-                //    entity.taskList.ClearTasks(); // we have completed it so remove it from the list
-                //    CreateTask(entity); // retry
-                // continue to find a better task
-            }
-        }
-        // now try and assign the values
-        task.SetHomePos = entity.home;
-
-        // else check if the priority is the lowest of this task
-        ITask bestTask = GetLowestPriority(entity, task);
-        // only add the task if needed
-        entity.taskList.AddTask(bestTask);
-
-        taskList.RemoveTask(bestTask);
-
-        return bestTask;
-
-    }
-    */
 
     public void AddTask(ITask task)
     {
@@ -287,53 +231,3 @@ public class TaskCreator : MonoBehaviour
 }
 
 
-/*
-using UnityEngine;
-
-public class TaskCreator : MonoBehaviour
-{
-    [SerializeField] private World world;
-    public TaskList GlobalTasks { get; private set; } = new();
-
-    public void CreateGlobalTask(TaskType type, string specialization, GameObject position, GameObject returnPoint, int priority)
-    {
-        ITask task = BuildTask(type, specialization, position, returnPoint, priority);
-        if (task == null) return;
-
-        GlobalTasks.AddTask(task);
-        Debug.Log($"[TaskCreator] Added global {type} task. Total = {GlobalTasks.GetTaskCount()}");
-    }
-
-    public void AssignDirectTask(EntityRuntime entity, TaskType type, string specialization, GameObject position, GameObject returnPoint, int priority)
-    {
-        ITask task = BuildTask(type, specialization, position, returnPoint, priority);
-        if (task == null) return;
-
-        entity.taskList.ClearTasks();
-        entity.taskList.AddTask(task);
-        entity.SetTaskTargets(task);
-
-        Debug.Log($"[TaskCreator] Assigned {type} task directly to {entity.name}");
-    }
-
-    private ITask BuildTask(TaskType type, string specialization, GameObject position, GameObject returnPoint, int priority)
-    {
-        ITask task = type switch
-        {
-            TaskType.Home => new ReturnHome(returnPoint.transform.position, priority),
-            TaskType.Idle => new IdleTask(priority),
-            TaskType.Scout when specialization == "resources" => new ScoutResources(position.transform.position, priority),
-            TaskType.Harvest when specialization == "random" => new HarvestRandom(position.transform.position, priority),
-            TaskType.Harvest when specialization == "specific" => new HarvestSpecific(position, priority),
-            TaskType.GoTo => new GoToTask(position.transform.position, priority),
-            _ => null
-        };
-
-        if (task != null)
-            task.SetHomePos = returnPoint?.transform;
-
-        return task;
-    }
-}
-
-*/

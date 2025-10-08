@@ -66,14 +66,6 @@ public class ScoutResources : ITask
     {
 
 
-
-        if (!entity.returningHome && world.GetFoundHarvestable(targetPos))
-        {
-            // Current target is stale, force scout to re-pick
-            entity.pendingTargetPos = Vector3.positiveInfinity;
-        }
-
-
         if (!entity.returningHome)
         {
             // Step 1: Pure data harvestable check
@@ -203,8 +195,6 @@ public class HarvestRandom : ITask
 
     public void UpdateTask(EntityRuntime entity, Vector3 entityPos, Vector3 targetPos, World world, float visionRadius)
     {
-
-
 
 
         if (!entity.returningHome)
