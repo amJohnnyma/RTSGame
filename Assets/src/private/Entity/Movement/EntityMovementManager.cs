@@ -94,20 +94,15 @@ public class EntityMovementManager : MonoBehaviour
                 continue;
             }
 
+            AssignEntityTasks(entity, world);
 
-
-            // assign tasks based on world state
-            if (AssignEntityTasks(entity, world, count))
-            {
-                continue;
-            }
 
             if (EntityHasBadTarget(entity))
-                {
-                    count++;
-                    continue;
+            {
+                count++;
+                continue;
 
-                }
+            }
 
             ResetEntityPendingtarget(entity, world);
 
@@ -123,6 +118,7 @@ public class EntityMovementManager : MonoBehaviour
 
 
             count++;
+
         }
 
     }
@@ -256,13 +252,6 @@ public class EntityMovementManager : MonoBehaviour
 
             // Behavior-specific effects
             entity.behaviorHandler.OnTargetReached(entity, entity.taskList.GetCurrentTask());
-
-            ITask currTask = entity.taskList.GetCurrentTask();
-            if (currTask.IsComplete)
-            {
-                entity.taskList.RemoveTask(currTask);
-                task[count] = null;
-            }
             return true;
         }
 
@@ -270,42 +259,49 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
-    bool AssignEntityTasks(EntityRuntime entity, World world, int count)
+    bool AssignEntityTasks(EntityRuntime entity, World world)
     {
-        // if there arent any harvestables
+        // Check if the entity currently has a task
+        ITask current = entity.taskList.GetCurrentTask();
+
+        //  Complete & clean up old task 
+        if (current != null && current.IsComplete)
+        {
+            entity.taskList.RemoveTask(current);
+            current = null;
+        }
+
+        // No available harvestables
         if (!world.IsUnfoundHarvestables())
         {
-            //   entity.rb.velocity = Vector3.zero;
-            count++;
-
-            // check my current task
-            ITask current = entity.taskList.GetCurrentTask();
-            // if the task is null, or we arent going home or idling
-            if (current == null || current.Type != TaskType.Home && current.Type != TaskType.Idle)
+            // No tasks to do → ensure entity goes home and idles
+            if (current == null || (current.Type != TaskType.Home && current.Type != TaskType.Idle))
             {
-                // we arent idle or going home, so go home
                 taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
+                return true;
             }
 
-            // we are idle
+            // If currently idling, just stop movement
             if (current.Type == TaskType.Idle)
             {
-                //set the velocity to zero
                 entity.rb.velocity = Vector3.zero;
                 return true;
             }
 
             return false;
-
-            //   continue;
         }
 
-        taskCreator.CreateTask(entity);
+        // If we get here, there *are* harvestables
+        if (current == null)
+        {
+            taskCreator.CreateTask(entity);
+            return true;
+        }
 
+        // Task still valid, no reassignment needed
         return false;
-        
-
     }
+
 
 }
 
