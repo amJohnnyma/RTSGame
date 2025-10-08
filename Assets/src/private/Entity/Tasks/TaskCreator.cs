@@ -195,38 +195,7 @@ public class TaskCreator : MonoBehaviour
         return curTask;
     }
     
-    public void AssignAvailableTasksToIdleEntities(List<EntityRuntime> entities)
-{
-    if (taskList.GetTaskCount() == 0) return;
 
-    for (int i = 0; i < entities.Count; i++)
-    {
-        var entity = entities[i];
-        ITask current = entity.taskList.GetCurrentTask();
-
-        // Skip if entity is busy or has an active non-idle task
-        if (current != null && current.Type != TaskType.Idle && !current.IsComplete)
-            continue;
-
-        // Take the highest-priority task from the global list
-        ITask newTask = taskList.GetCurrentTask();
-        if (newTask == null) continue;
-
-        // Assign it
-        entity.taskList.ClearTasks();
-        entity.taskList.AddTask(newTask);
-
-        // Set target
-        entity.pendingTargetPos = newTask.TargetPos;
-        entity.target = null; // Force re-evaluation in movement
-        entity.mainTarget = null;
-
-        // Remove from global pool
-        taskList.RemoveTask(newTask);
-
-        Debug.Log($"Assigned {newTask.Type} to {entity.name}");
-    }
-}
 
 }
 
