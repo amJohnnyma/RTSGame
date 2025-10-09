@@ -261,7 +261,21 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
-bool AssignEntityTasks(EntityRuntime entity, World world)
+
+    // this needs to be cleaner
+/*
+    if no task get a task return;
+
+    if current not complete, finish it return;
+
+    if idle or home -> can take a global task return;
+
+
+    // Task system should get a rework
+    // the entity shouldnt think for itself, the task must dictate what it does -> Check entity movement stuff aswell
+
+*/
+    bool AssignEntityTasks(EntityRuntime entity, World world)
 {
     ITask current = entity.currentTask;
 

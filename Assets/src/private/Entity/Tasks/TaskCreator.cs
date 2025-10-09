@@ -179,7 +179,7 @@ public ITask CreateTask(EntityRuntime entity)
 
         // 6. Assign to entity task list
         entity.currentTask = currentTask;
-       // entity.mainTarget = currentTask.
+        entity.pendingTargetPos = currentTask.TargetPos;
 
     
 
