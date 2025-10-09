@@ -16,24 +16,24 @@ public class TaskCreator : MonoBehaviour
     {
         if (type == TaskType.Home)
         {
-            var current = entity.taskList.GetCurrentTask();
+            var current = entity.currentTask;
             if (current == null || current.Type != TaskType.Home)
             {
-                ITask task = new ReturnHome(entity.home.transform.position, 0);
+                ITask task = new ReturnHome(entity.home.transform.position, 5);
                 entity.target = entity.home;
                 entity.mainTarget = entity.home;
-                entity.taskList.ClearTasks();
-                entity.taskList.AddTask(task);
+                entity.currentTask = null;
+                entity.currentTask = task;
             }
         }
         else if (type == TaskType.Idle)
         {
-            var current = entity.taskList.GetCurrentTask();
+            var current = entity.currentTask;
             if (current == null || current.Type != TaskType.Idle)
             {
                 ITask task = new IdleTask(9);
-                entity.taskList.ClearTasks();
-                entity.taskList.AddTask(task);
+                entity.currentTask = null;
+                entity.currentTask = task;
             }
         }
         else if (type == TaskType.Scout)
@@ -123,56 +123,67 @@ public class TaskCreator : MonoBehaviour
     }
 
     // getter and 'setter' to make default tasks
-    public ITask CreateTask(EntityRuntime entity)
+public ITask CreateTask(EntityRuntime entity)
 {
-    // 1. Get current task
-    ITask task = entity.taskList.GetCurrentTask();
+        // 1. Check entity current task
+        ITask currentTask = entity.currentTask;
 
-    // 2. Try pulling from global list if entity has none
-    if (task == null)
-        task = taskList.GetCurrentTask();
+    // 2. Try pulling from global task list if entity has none
+    if (currentTask == null)
+        currentTask = taskList.GetCurrentTask();
 
     // 3. Handle idle cleanup
-    if (task is IdleTask idle)
+    if (currentTask is IdleTask idle)
     {
-        // If entity is idling and new tasks exist, clear idle
         if (taskList.GetTaskCount() > 0 || entity.world.IsUnfoundHarvestables())
         {
+            Debug.Log("Current idle and tasks available");
             idle.SetIsComplete = true;
-            entity.taskList.RemoveTask(idle);
-            task = null; // allow replacement
+            entity.currentTask = null;
+            currentTask = null; // allow new assignment
         }
     }
 
-    // 4. Create new default task if needed
-    if (task == null)
+    // 4. Assign default task only if no global task
+    if (currentTask == null)
     {
-        switch (entity.behaviour)
+        if (taskList.GetTaskCount() > 0)
         {
-            case EntityBehaviour.SCOUT:
-                task = new ScoutResources(Vector3.zero, 0);
-                break;
-            case EntityBehaviour.HARVEST:
-                task = new HarvestRandom(Vector3.zero, 0);
-                break;
-            case EntityBehaviour.DEFAULT:
-                task = new ScoutResources(Vector3.zero, 0);
-                break;
+            Debug.Log("Current null and tasks available");
+            // Take the first available global task
+            currentTask = taskList.GetCurrentTask();
+                Debug.Log("Current Task: " + currentTask.GetType());
+            taskList.RemoveTask(currentTask);
+        }
+        else
+        {
+            // No global tasks, assign default based on behaviour
+            switch (entity.behaviour)
+            {
+                case EntityBehaviour.SCOUT:
+                    currentTask = new ScoutResources(Vector3.zero, 5);
+                    break;
+                case EntityBehaviour.HARVEST:
+                    currentTask = new HarvestRandom(Vector3.zero, 5);
+                    break;
+                case EntityBehaviour.DEFAULT:
+                    currentTask = new ScoutResources(Vector3.zero, 5);
+                    break;
+            }
         }
     }
 
     // 5. Assign home reference if applicable
     if (entity.home != null)
-        task.SetHomePos = entity.home;
+        currentTask.SetHomePos = entity.home;
 
-    // 6. Choose best available task based on priority
-    ITask bestTask = GetLowestPriority(entity, task);
+        // 6. Assign to entity task list
+        entity.currentTask = currentTask;
+       // entity.mainTarget = currentTask.
 
-    // 7. Add to entity task list, remove from global if necessary
-    entity.taskList.AddTask(bestTask);
-    taskList.RemoveTask(bestTask);
+    
 
-    return bestTask;
+    return currentTask;
 }
 
 
@@ -199,137 +210,3 @@ public class TaskCreator : MonoBehaviour
 
 }
 
-
-/* Potential logic fix from chat
-
-public ITask CreateTask(EntityRuntime entity)
-{
-    // 1. Check entity current task
-    ITask currentTask = entity.taskList.GetCurrentTask();
-
-    // 2. Try pulling from global task list if entity has none
-    if (currentTask == null)
-        currentTask = taskList.GetCurrentTask();
-
-    // 3. Handle idle cleanup
-    if (currentTask is IdleTask idle)
-    {
-        if (taskList.GetTaskCount() > 0 || entity.world.IsUnfoundHarvestables())
-        {
-            idle.SetIsComplete = true;
-            entity.taskList.RemoveTask(idle);
-            currentTask = null; // allow new assignment
-        }
-    }
-
-    // 4. Assign default task only if no global task
-    if (currentTask == null)
-    {
-        if (taskList.GetTaskCount() > 0)
-        {
-            // Take the first available global task
-            currentTask = taskList.GetCurrentTask();
-            taskList.RemoveTask(currentTask);
-        }
-        else
-        {
-            // No global tasks, assign default based on behaviour
-            switch (entity.behaviour)
-            {
-                case EntityBehaviour.SCOUT:
-                    currentTask = new ScoutResources(Vector3.zero, 0);
-                    break;
-                case EntityBehaviour.HARVEST:
-                    currentTask = new HarvestRandom(Vector3.zero, 0);
-                    break;
-                case EntityBehaviour.DEFAULT:
-                    currentTask = new ScoutResources(Vector3.zero, 0);
-                    break;
-            }
-        }
-    }
-
-    // 5. Assign home reference if applicable
-    if (entity.home != null)
-        currentTask.SetHomePos = entity.home;
-
-    // 6. Assign to entity task list
-    entity.taskList.AddTask(currentTask);
-
-    return currentTask;
-}
-
-
-bool AssignEntityTasks(EntityRuntime entity, World world)
-{
-    ITask current = entity.taskList.GetCurrentTask();
-
-    // --- Clean up finished tasks ---
-    if (current != null && current.IsComplete)
-    {
-        entity.taskList.RemoveTask(current);
-        current = null;
-    }
-
-    bool hasHarvestables = world.IsUnfoundHarvestables();
-    bool hasGlobalTasks = taskCreator.taskList.GetTaskCount() > 0;
-    bool isAtHome = entity.IsAtHome();
-
-    // --- CASE 1: Global tasks available ---
-    if (hasGlobalTasks)
-    {
-        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
-        {
-            // Take a task from the global list
-            taskCreator.CreateTask(entity);
-            return true;
-        }
-        return false; // already working on a non-idle task
-    }
-
-    // --- CASE 2: Harvestables exist but no global tasks ---
-    if (hasHarvestables)
-    {
-        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
-        {
-            // Assign default harvest/scout task
-            taskCreator.CreateTask(entity);
-            return true;
-        }
-        return false; // already doing something
-    }
-
-    // --- CASE 3: No global tasks and no harvestables ---
-    if (!hasHarvestables && !hasGlobalTasks)
-    {
-        if (isAtHome)
-        {
-            if (current == null || current.Type != TaskType.Idle)
-            {
-                taskCreator.CreateTaskForEntity(TaskType.Idle, "IdleHome", entity);
-                return true;
-            }
-            return false; // already idling
-        }
-        else
-        {
-            if (current == null || current.Type != TaskType.Home)
-            {
-                if (entity.home != null)
-                {
-                    taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
-                    return true;
-                }
-                Debug.LogWarning($"Entity {entity.name} has no home assigned, cannot return home.");
-                return false;
-            }
-            return false; // already returning home
-        }
-    }
-
-    return false;
-}
-
-
-
-*/

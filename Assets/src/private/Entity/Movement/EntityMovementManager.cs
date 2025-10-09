@@ -95,6 +95,8 @@ public class EntityMovementManager : MonoBehaviour
             }
 
             AssignEntityTasks(entity, world);
+            Debug.Log("Doing task: " + entity.currentTask.GetType());
+            Debug.Log("Global available: " + taskCreator.taskList.GetTaskCount());
 
 
             if (EntityHasBadTarget(entity))
@@ -251,7 +253,7 @@ public class EntityMovementManager : MonoBehaviour
             entity.SetTargetToggle();
 
             // Behavior-specific effects
-            entity.behaviorHandler.OnTargetReached(entity, entity.taskList.GetCurrentTask());
+            entity.behaviorHandler.OnTargetReached(entity, entity.currentTask);
             return true;
         }
 
@@ -259,65 +261,72 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
-    bool AssignEntityTasks(EntityRuntime entity, World world)
+bool AssignEntityTasks(EntityRuntime entity, World world)
 {
-    ITask current = entity.taskList.GetCurrentTask();
+    ITask current = entity.currentTask;
 
     // --- Clean up finished tasks ---
     if (current != null && current.IsComplete)
     {
-        entity.taskList.RemoveTask(current);
+        entity.currentTask = null;
         current = null;
     }
 
     bool hasHarvestables = world.IsUnfoundHarvestables();
-    bool hasOtherTasks = taskCreator.taskList.GetTaskCount() > 0;
+    bool hasGlobalTasks = taskCreator.taskList.GetTaskCount() > 0;
     bool isAtHome = entity.IsAtHome();
 
-    // --- If there are tasks or harvestables available, take them ---
-    if (hasHarvestables || hasOtherTasks)
+    
+    if (hasGlobalTasks)
     {
-        // Leave idle or home immediately
+        Debug.Log("Are global tasks");
         if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
         {
+            // Take a task from the global list
             taskCreator.CreateTask(entity);
             return true;
         }
-
-        return false; // already has a valid working task
+        return false; // already working on a non-idle task
     }
 
-    // --- If no harvestables and no global tasks ---
-    if (!hasHarvestables && !hasOtherTasks)
+    // --- CASE 2: Harvestables exist but no global tasks ---
+    if (hasHarvestables)
     {
-        // If already home
-        if (isAtHome)
+        if (current == null || current.Type == TaskType.Idle || current.Type == TaskType.Home)
         {
-            
-            // Stay idle if already idling
-                if (current != null && current.Type == TaskType.Idle)
-                    return false;
-
-            // Otherwise, assign idle task
-            taskCreator.CreateTaskForEntity(TaskType.Idle, "IdleHome", entity);
+            // Assign default harvest/scout task
+            taskCreator.CreateTask(entity);
             return true;
         }
+        return false; // already doing something
+    }
 
-        // Not home yet → go home first
-        if (current == null || current.Type != TaskType.Home)
+    // --- CASE 3: No global tasks and no harvestables ---
+    if (!hasHarvestables && !hasGlobalTasks)
+    {
+        if (isAtHome)
         {
-            if (entity.home != null)
+            if (current == null || current.Type != TaskType.Idle)
             {
-                taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
+                taskCreator.CreateTaskForEntity(TaskType.Idle, "IdleHome", entity);
                 return true;
             }
-
-            Debug.LogWarning($"Entity {entity.name} has no home assigned, cannot return home.");
-            return false;
+            return false; // already idling
         }
-
-        // Currently returning home
-        return false;
+        else
+        {
+            if (current == null || current.Type != TaskType.Home)
+            {
+                if (entity.home != null)
+                {
+                    taskCreator.CreateTaskForEntity(TaskType.Home, "ReturnHome", entity);
+                    return true;
+                }
+                Debug.LogWarning($"Entity {entity.name} has no home assigned, cannot return home.");
+                return false;
+            }
+            return false; // already returning home
+        }
     }
 
     return false;

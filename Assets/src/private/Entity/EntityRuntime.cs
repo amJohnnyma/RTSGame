@@ -48,9 +48,8 @@ public class EntityRuntime : MonoBehaviour
     [HideInInspector] public Vector3 pendingTargetPos = Vector3.positiveInfinity;
     [HideInInspector] public Vector3 currentPos = Vector3.zero;
 
-    [Header("Tasks")]
-    [SerializeField] public TaskList taskList = new();
 
+    public ITask currentTask;
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
