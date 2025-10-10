@@ -93,7 +93,17 @@ public class EntityMovementManager : MonoBehaviour
         if (entity.currentTask != null && !entity.currentTask.IsTaskComplete())
             return;
 
+        if(entity.currentTask.IsTaskComplete())
+        {
+            // check what type of task
+
+            // make it idle, or go home, or whatever
+        }
+
+        // these are user created tasks
         var newTask = taskCreator.TryAssignGlobalTask(entity);
+
+        // if newTask is null then ask the 'brain' -> The default task assignment to be implemented
 
         if (newTask != null)
         {

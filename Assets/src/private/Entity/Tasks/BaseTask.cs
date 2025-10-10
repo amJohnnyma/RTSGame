@@ -15,12 +15,15 @@ public abstract class BaseTask
     public EntityRuntime entity { get; private set; }
     protected Vector3 targetPos; // Current position to move toward
     protected bool isCompleted = false;
+    protected readonly int repeat;
 
-    protected BaseTask(EntityRuntime entity)
+    protected BaseTask(EntityRuntime entity, int repeat = 0)
     {
         this.entity = entity;
         if (entity != null)
             entity.currentTask = this;
+
+        this.repeat = repeat;
     }
 
     public virtual void AssignEntity(EntityRuntime newEntity)
@@ -124,6 +127,7 @@ public class ScoutTask : BaseTask
         // Return home next
         targetPos = homePos;
         entity.returningHome = true;
+        // do all repeats first
         isCompleted = true;
     }
 
@@ -148,11 +152,14 @@ public class HarvestTask : BaseTask
     private Vector3 currentHarvestable;
     private bool returningHome = false;
 
+    // what am i harvesting? 
+    // How much is needed? (Priority over repeats)
+    // Where must i deposit the resources?
     public HarvestTask(EntityRuntime entity, World world)
         : base(entity)
     {
         this.world = world;
-      //  homePos = entity.home.position;
+        //  homePos = entity.home.position;
         PickNextHarvestable();
     }
 
@@ -189,6 +196,7 @@ public class HarvestTask : BaseTask
         {
             returningHome = false;
             PickNextHarvestable();
+            //do all repeats first
             isCompleted = true;
         }
     }
