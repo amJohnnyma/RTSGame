@@ -14,11 +14,12 @@ public class TaskCreatorUI : MonoBehaviour
     public bool createTask;
 
 
+
     public TaskCreator taskCreator;
 
     public void Start()
     {
-       // createButton.onClick.AddListener(OnCreateTaskClicked);
+        // createButton.onClick.AddListener(OnCreateTaskClicked);
         taskCreator = GetComponent<TaskCreator>();
     }
 
@@ -26,7 +27,10 @@ public class TaskCreatorUI : MonoBehaviour
     {
         if (!Application.isPlaying || !createTask) return;
 
-        taskCreator.CreateTask(type, specialization, position, returnPoint, priority);
+        Transform targetTransform = position != null ? position.transform : null;
+        Vector3 returnPos = returnPoint != null ? returnPoint.transform.position : Vector3.zero;
+
+        taskCreator.CreateTask(type, specialization, targetTransform, priority);
         createTask = false;
     }
 

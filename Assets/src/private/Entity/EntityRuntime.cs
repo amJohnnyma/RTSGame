@@ -15,9 +15,7 @@ public enum EntityBehaviour
 public class EntityRuntime : MonoBehaviour
 {
     [Header("References")]
-    public Transform target;
     public Transform home;
-    public Transform mainTarget;
     public Collider worldCollider;
     public World world;
     [HideInInspector] public Vector3 homePos;
@@ -55,7 +53,6 @@ public class EntityRuntime : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
 
-        target = (target == null) ? home : target;
 
         switch (behaviour)
         {
@@ -78,7 +75,6 @@ public class EntityRuntime : MonoBehaviour
 
     void Start()
     {
-        mainTarget = world.GetRandomPlacedEntity().transform;
 
     }
 

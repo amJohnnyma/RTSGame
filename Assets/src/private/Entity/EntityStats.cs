@@ -151,7 +151,8 @@ public class EntityStats : MonoBehaviour
         string text = this.ToString();
         if (entityRuntime != null)
         {
-            text += "\n" + entityRuntime.currentTask.GetTaskDetails(entityRuntime);
+            if(entityRuntime.currentTask != null)
+                text += "\n" + entityRuntime.currentTask.GetTaskDetails();
         }
         namelbl.text = text;
         return true;

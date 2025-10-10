@@ -324,8 +324,26 @@ public class World : MonoBehaviour
 
     }
 
+    public void AddFoundHarvestable(Vector3 key)
+    {
+
+        try
+        {
+            GameObject go = GetPlacedEntity(key);
+            foundHarvestables.Add(key, go);
+
+        }
+        catch (Exception e) { Debug.Log(e); }
+
+        Debug.Log("Harvestable added at " + key.ToString());
+
+
+
+    }
+
     public void DestroyFoundHarvestable(Vector3 key)
     {
+        Debug.Log("Trying to destroy: " + key.ToString());
         if (foundHarvestables.ContainsKey(key))
         {
             GameObject go = foundHarvestables[key];
@@ -404,10 +422,7 @@ public class World : MonoBehaviour
     }
 
 
-    public void AddTask(ITask task)
-    {
-        taskCreator.AddTask(task);
-    }
+
 
     
     

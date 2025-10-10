@@ -9,12 +9,7 @@ public class TaskList
     public void RemoveTask(ITask task) => _tasks.Remove(task);
     public void ClearTasks() => _tasks.Clear();
 
-    public ITask? GetCurrentTask()
-    {
-        if (_tasks.Count == 0) return null;
 
-        return _tasks.OrderByDescending(t => t.Priority).First();
-    }
 
     public int GetTaskCount()
     {
