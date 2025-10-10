@@ -125,8 +125,8 @@ public class TaskCreator : MonoBehaviour
     // getter and 'setter' to make default tasks
 public ITask CreateTask(EntityRuntime entity)
 {
-        // 1. Check entity current task
-        ITask currentTask = entity.currentTask;
+    // 1. Check entity current task
+    ITask currentTask = entity.currentTask;
 
     // 2. Try pulling from global task list if entity has none
     if (currentTask == null)

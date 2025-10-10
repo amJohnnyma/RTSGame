@@ -175,6 +175,7 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
+// perform physics for the rigidbody
     void EntityPhysics(EntityRuntime entity)
     {
 
@@ -212,6 +213,7 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
+// target and main target null -> stop moving and set target to home
     bool EntityHasBadTarget(EntityRuntime entity)
     {
         if (entity.target == null)
@@ -231,6 +233,7 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
+// set the target to the new point
     void ResetEntityPendingtarget(EntityRuntime entity, World world)
     {
         if (entity.pendingTargetPos != Vector3.positiveInfinity)
@@ -244,6 +247,7 @@ public class EntityMovementManager : MonoBehaviour
 
     }
 
+// are they close enough to the target?
     bool EntityReachedTarget(EntityRuntime entity, ITask[] task, int count)
     {
         if ((entity.target.position - entity.transform.position).sqrMagnitude < entity.stopFollowDist * entity.stopFollowDist)

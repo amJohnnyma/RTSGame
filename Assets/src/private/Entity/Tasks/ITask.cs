@@ -15,7 +15,7 @@ public enum TaskType
 public interface ITask
 {
     TaskType Type { get; }
-    Vector3 TargetPos { get; }
+    Vector3 TargetPos { get; } //main target
     Transform HomePos { get; set; }
     int Priority { get; }
     bool IsComplete { get; }
