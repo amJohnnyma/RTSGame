@@ -7,6 +7,7 @@ public class EntityMovementManager : MonoBehaviour
     public List<EntityRuntime> entities = new();
 
     private TaskCreator taskCreator;
+    private bool updatedToZeroFlag = false;
 
     void Start()
     {
@@ -17,13 +18,24 @@ public class EntityMovementManager : MonoBehaviour
         taskCreator = GetComponent<TaskCreator>();
     }
 
+    public void SetZeroFlag(bool val)
+    {
+        updatedToZeroFlag = val;
+    }
+
     public void EntityPausedMovement()
     {
-        
+        if (updatedToZeroFlag) return;
+        foreach (var i in entities)
+        {
+            i.rb.velocity = Vector3.zero;
+        }
+        updatedToZeroFlag = true;
     }
 
     public void EntityMovementUpdates(World world)
     {
+      //  updatedToZeroFlag = false;
         world.RefreshHarvestableCache();
 
         Vector3[] positions = new Vector3[entities.Count];
@@ -93,7 +105,7 @@ public class EntityMovementManager : MonoBehaviour
         if (entity.currentTask != null && !entity.currentTask.IsTaskComplete())
             return;
 
-        if(entity.currentTask.IsTaskComplete())
+   //     if(entity.currentTask.IsTaskComplete())
         {
             // check what type of task
 

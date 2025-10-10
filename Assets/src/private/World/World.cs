@@ -418,6 +418,7 @@ public class World : MonoBehaviour
     public void ToggleWorldPause()
     {
         worldPaused = !worldPaused;
+        entityMovementManager.SetZeroFlag(false);
 
     }
 
