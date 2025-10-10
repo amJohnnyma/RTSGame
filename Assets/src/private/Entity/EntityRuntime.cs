@@ -47,7 +47,7 @@ public class EntityRuntime : MonoBehaviour
     [HideInInspector] public Vector3 currentPos = Vector3.zero;
 
 
-    public ITask currentTask;
+    public BaseTask currentTask;
     void Awake()
     {
         rb = GetComponent<Rigidbody>();

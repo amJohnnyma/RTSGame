@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TaskCreator : MonoBehaviour
 {
-    private readonly List<ITask> globalTasks = new();
+    private readonly List<BaseTask> globalTasks = new();
 
     public World world; // Reference to the world
 
@@ -19,7 +19,7 @@ public class TaskCreator : MonoBehaviour
     {
         for (int i = 0; i < priority; i++)
         {
-            ITask task = type switch
+            BaseTask task = type switch
             {
                 TaskType.GoTo => new GoToTask(null, position),
                 TaskType.Scout => new ScoutTask(null, world, visionRadius),
@@ -36,13 +36,13 @@ public class TaskCreator : MonoBehaviour
     }
 
     // --- Assign first available task to an entity ---
-    public ITask TryAssignGlobalTask(EntityRuntime entity)
+    public BaseTask TryAssignGlobalTask(EntityRuntime entity)
     {
         if (globalTasks.Count == 0)
             return null;
 
         // Pick a task matching the entity behaviour first
-        ITask task = PickTaskForEntity(entity);
+        BaseTask task = PickTaskForEntity(entity);
 
         if (task == null) return null;
 
@@ -55,7 +55,7 @@ public class TaskCreator : MonoBehaviour
     }
 
     // --- Pick task based on entity behaviour ---
-    private ITask PickTaskForEntity(EntityRuntime entity)
+    private BaseTask PickTaskForEntity(EntityRuntime entity)
     {
         TaskType preferredType = entity.behaviour switch
         {
@@ -72,8 +72,8 @@ public class TaskCreator : MonoBehaviour
         });
     }
 
-    // --- Helper to determine type of ITask ---
-    private TaskType GetTaskType(ITask task)
+    // --- Helper to determine type of BaseTask ---
+    private TaskType GetTaskType(BaseTask task)
     {
         return task switch
         {

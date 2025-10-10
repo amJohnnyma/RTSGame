@@ -3,10 +3,10 @@ using System.Linq;
 
 public class TaskList
 {
-    private readonly List<ITask> _tasks = new();
+    private readonly List<BaseTask> _tasks = new();
 
-    public void AddTask(ITask task) => _tasks.Add(task);
-    public void RemoveTask(ITask task) => _tasks.Remove(task);
+    public void AddTask(BaseTask task) => _tasks.Add(task);
+    public void RemoveTask(BaseTask task) => _tasks.Remove(task);
     public void ClearTasks() => _tasks.Clear();
 
 
